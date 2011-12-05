@@ -9,7 +9,7 @@ using System.IO;
 using ICSharpCode.SharpZipLib.Zip.Compression;
 using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 
-namespace GitStore
+namespace OpenHome.Git
 {
     internal class Fetcher
     {

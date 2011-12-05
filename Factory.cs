@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GitStore
+namespace OpenHome.Git
 {
     public interface IPerson
     {
