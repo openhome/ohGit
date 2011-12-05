@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ohGit")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("OpenHome")]
 [assembly: AssemblyProduct("ohGit")]
 [assembly: AssemblyCopyright("Copyright © OpenHome 2011")]
 [assembly: AssemblyTrademark("")]
