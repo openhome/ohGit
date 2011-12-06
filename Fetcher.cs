@@ -88,8 +88,6 @@ namespace OpenHome.Git
                 return (false);
             }
 
-            string headsha1 = sha1;
-
             string capabilities = ASCIIEncoding.ASCII.GetString(bytes, 5, bytes.Length - 5);
 
             if (capabilities.EndsWith("\n"))
@@ -269,7 +267,7 @@ namespace OpenHome.Git
             BinaryReader preader = new BinaryReader(pstream);
 
             Pack.ReadSignature(preader);
-            uint version = Pack.ReadVersion(preader);
+            Pack.ReadVersion(preader);
             uint objectcount = Pack.ReadItemCount(preader);
 
             // Inflate items

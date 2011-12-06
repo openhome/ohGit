@@ -48,10 +48,10 @@ namespace OpenHome.Git
                     iObjectCount = GetEntry(iIndexFanout, 255);
 
                     iIndexSha1 = reader.ReadBytes((int)(iObjectCount * 20));
-                    iIndexCrc = reader.ReadBytes((int)(iObjectCount * 4));
+                    //iIndexCrc = reader.ReadBytes((int)(iObjectCount * 4));
                     iIndexOffset = reader.ReadBytes((int)(iObjectCount * 4));
-                    iChecksumPack = reader.ReadBytes(20);
-                    iChecksumIndex = reader.ReadBytes(20);
+                    //iChecksumPack = reader.ReadBytes(20);
+                    //iChecksumIndex = reader.ReadBytes(20);
                 }
                 catch (GitStoreError)
                 {
@@ -70,8 +70,7 @@ namespace OpenHome.Git
                     BinaryReader reader = new BinaryReader(pack);
 
                     ReadSignature(reader);
-
-                    iPackVersion = ReadVersion(reader);
+                    ReadVersion(reader);
 
                     uint count = ReadItemCount(reader);
 
@@ -384,14 +383,14 @@ namespace OpenHome.Git
 
         private string iIndexPath;
         private string iPackPath;
-        private uint iPackVersion;
+        //private uint iPackVersion;
 
         private byte[] iIndexFanout;
         private byte[] iIndexSha1;
-        private byte[] iIndexCrc;
+        //private byte[] iIndexCrc;
         private byte[] iIndexOffset;
-        private byte[] iChecksumPack;
-        private byte[] iChecksumIndex;
+        //private byte[] iChecksumPack;
+        //private byte[] iChecksumIndex;
 
         private uint iObjectCount;
     }

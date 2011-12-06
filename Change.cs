@@ -164,8 +164,6 @@ namespace OpenHome.Git
                 throw (new GitStoreError(aName + " already staged for mode change"));
             }
 
-            ITreeEntry item = Find(aName);
-
             if (Find(aName) == null)
             {
                 throw (new GitStoreError(aName + " not found"));
@@ -186,8 +184,6 @@ namespace OpenHome.Git
             {
                 throw (new GitStoreError(aName + " already staged for mode change"));
             }
-
-            ITreeEntry item = Find(aName);
 
             if (Find(aName) == null)
             {

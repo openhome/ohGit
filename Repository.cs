@@ -25,16 +25,16 @@ namespace OpenHome.Git
 
                 DirectoryInfo git = folder.CreateSubdirectory(".git");
 
-                DirectoryInfo hooks = git.CreateSubdirectory("hooks");
+                //DirectoryInfo hooks = git.CreateSubdirectory("hooks");
                 DirectoryInfo info = git.CreateSubdirectory("info");
                 DirectoryInfo objects = git.CreateSubdirectory("objects");
                 DirectoryInfo refs = git.CreateSubdirectory("refs");
 
-                DirectoryInfo objectsInfo = objects.CreateSubdirectory("info");
-                DirectoryInfo objectsPack = objects.CreateSubdirectory("pack");
+                //DirectoryInfo objectsInfo = objects.CreateSubdirectory("info");
+                //DirectoryInfo objectsPack = objects.CreateSubdirectory("pack");
 
-                DirectoryInfo refsHeads = refs.CreateSubdirectory("heads");
-                DirectoryInfo refsTags = refs.CreateSubdirectory("tags");
+                //DirectoryInfo refsHeads = refs.CreateSubdirectory("heads");
+                //DirectoryInfo refsTags = refs.CreateSubdirectory("tags");
 
                 FileStream exclude = File.Create(Path.Combine(info.FullName, "exclude"));
                 StreamWriter excludeWriter = new StreamWriter(exclude);
@@ -199,7 +199,7 @@ namespace OpenHome.Git
             iFolderHeads = GetSubFolder("refs\\heads");
             iFolderObjects = GetSubFolder("objects");
             iFolderTags = GetSubFolder("refs\\tags");
-            iFolderRemotes = GetSubFolder("refs\\remotes");
+            //iFolderRemotes = GetSubFolder("refs\\remotes");
             iFolderPack = GetSubFolder("objects\\pack");
         }
 
@@ -219,7 +219,7 @@ namespace OpenHome.Git
         {
             string path = Path.Combine(iFolderHeads.FullName, aBranch.Name);
 
-            FileInfo info = new FileInfo(Path.Combine(iFolderHeads.FullName, aBranch.Name));
+            FileInfo info = new FileInfo(path);
 
             FileStream file = info.Create();
             StreamWriter writer = new StreamWriter(file);
@@ -492,7 +492,7 @@ namespace OpenHome.Git
         private DirectoryInfo iFolderHeads;
         private DirectoryInfo iFolderObjects;
         private DirectoryInfo iFolderTags;
-        private DirectoryInfo iFolderRemotes;
+        //private DirectoryInfo iFolderRemotes;
         private DirectoryInfo iFolderPack;
 
         private string iHead;
