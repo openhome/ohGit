@@ -27,8 +27,8 @@ namespace OpenHome.Git
 
                 //DirectoryInfo hooks = git.CreateSubdirectory("hooks");
                 DirectoryInfo info = git.CreateSubdirectory("info");
-                DirectoryInfo objects = git.CreateSubdirectory("objects");
-                DirectoryInfo refs = git.CreateSubdirectory("refs");
+                //DirectoryInfo objects = git.CreateSubdirectory("objects");
+                //DirectoryInfo refs = git.CreateSubdirectory("refs");
 
                 //DirectoryInfo objectsInfo = objects.CreateSubdirectory("info");
                 //DirectoryInfo objectsPack = objects.CreateSubdirectory("pack");
