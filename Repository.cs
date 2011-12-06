@@ -14,7 +14,7 @@ namespace OpenHome.Git
     {
         public static IRepository Initialise(string aPath, string aBranch)
         {
-            if (Directory.Exists(aPath))
+            if (Directory.Exists(Path.Combine(aPath, ".git")))
             {
                 throw (new GitStoreError("Repository already exists"));
             }
