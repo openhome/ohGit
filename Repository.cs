@@ -196,11 +196,11 @@ namespace OpenHome.Git
 
         private void FindFolders()
         {
-            iFolderHeads = GetSubFolder("refs\\heads");
+            iFolderHeads = GetSubFolder(Path.Combine("refs", "heads"));
             iFolderObjects = GetSubFolder("objects");
-            iFolderTags = GetSubFolder("refs\\tags");
-            //iFolderRemotes = GetSubFolder("refs\\remotes");
-            iFolderPack = GetSubFolder("objects\\pack");
+            iFolderTags = GetSubFolder(Path.Combine("refs", "tags"));
+            //iFolderRemotes = GetSubFolder(Path.Combine("refs", "remotes"));
+            iFolderPack = GetSubFolder(Path.Combine("objects", "pack"));
         }
 
         private void FindBranches()
