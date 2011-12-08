@@ -397,7 +397,8 @@ namespace OpenHome.Git
 
             try
             {
-                string path = Path.Combine(iFolderObjects.FullName, aId.Substring(0, 2), aId.Substring(2, 38));
+                string path = Path.Combine(iFolderObjects.FullName, aId.Substring(0, 2));
+                path = Path.Combine(path, aId.Substring(2, 38));
 
                 file = File.OpenRead(path);
             }

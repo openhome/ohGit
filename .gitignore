@@ -1,3 +1,4 @@
 # Visual Studio build artefacts
 bin/
 obj/
+*.suo
