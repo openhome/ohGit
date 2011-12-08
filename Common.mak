@@ -1,4 +1,4 @@
-all : $(objdir)/$(dllprefix)ohGit.$(dllext)
+all : $(objdir)/ohGit.net.dll
 
 source = \
 Blob.cs \
@@ -15,9 +15,9 @@ Repository.cs \
 Tag.cs \
 Tree.cs
   
-$(objdir)/$(dllprefix)ohGit.$(dllext) : $(objdir) $(source)
+$(objdir)/ohGit.net.dll : $(objdir) $(source)
 	$(csharp) /unsafe /t:library \
-		/out:$(objdir)/$(dllprefix)ohGit.$(dllext) \
+		/out:$(objdir)/ohGit.net.dll \
 		/reference:System.dll \
 		/reference:SharpZipLib/ICSharpCode.SharpZipLib.dll \
 		$(source)
