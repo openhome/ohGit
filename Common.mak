@@ -17,7 +17,7 @@ Tree.cs
   
 $(objdir)$(dllprefix)ohGit.$(dllext) : $(objdir) $(source)
 	$(csharp) /unsafe /t:library \
-		/out:$(objdir)/$(dllprefix)ohGit.net.$(dllext) \
+		/out:$(objdir)/$(dllprefix)ohGit.$(dllext) \
 		/reference:System.dll \
 		/reference:SharpZipLib/ICSharpCode.SharpZipLib.dll \
 		$(source)
