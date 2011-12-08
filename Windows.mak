@@ -41,6 +41,7 @@ default : all
 
 $(objdir) :
 	if not exist Build\Obj\$(platform)\$(build) mkdir Build\Obj\$(platform)\$(build)
+	copy /Y SharpZipLib\ICSharpCode.SharpZipLib.dll Build\Obj\$(platform)\$(build)
 
 clean:
 	del /S /Q Build\Obj\$(platform)\$(build)
