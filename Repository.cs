@@ -26,16 +26,15 @@ namespace OpenHome.Git
                 DirectoryInfo git = folder.CreateSubdirectory(".git");
 
                 //DirectoryInfo hooks = git.CreateSubdirectory("hooks");
+                DirectoryInfo objects = git.CreateSubdirectory("objects");
+                objects.CreateSubdirectory("info");
+                objects.CreateSubdirectory("pack");
+
+                DirectoryInfo refs = git.CreateSubdirectory("refs");
+                refs.CreateSubdirectory("heads");
+                refs.CreateSubdirectory("tags");
+
                 DirectoryInfo info = git.CreateSubdirectory("info");
-                //DirectoryInfo objects = git.CreateSubdirectory("objects");
-                //DirectoryInfo refs = git.CreateSubdirectory("refs");
-
-                //DirectoryInfo objectsInfo = objects.CreateSubdirectory("info");
-                //DirectoryInfo objectsPack = objects.CreateSubdirectory("pack");
-
-                //DirectoryInfo refsHeads = refs.CreateSubdirectory("heads");
-                //DirectoryInfo refsTags = refs.CreateSubdirectory("tags");
-
                 FileStream exclude = File.Create(Path.Combine(info.FullName, "exclude"));
                 StreamWriter excludeWriter = new StreamWriter(exclude);
                 excludeWriter.Write("# git-ls-files --others --exclude-from=.git/info/exclude\n");
