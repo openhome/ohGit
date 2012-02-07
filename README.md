@@ -1,10 +1,10 @@
-# GitStore
+# ohGit
 
-GitStore is a library for fetching a git using the git protocol and reading its contents.
+ohGit is a library for fetching a git using the git protocol and reading its contents.
 
 It is written in C#, and is compatible with both .Net and Mono.
 
-GitStore depends on SharpZipLib from ic#code, which is included as a library.
+ohGit depends on SharpZipLib from ic#code, which is included as a library.
 
 # Getting Started
 
@@ -91,6 +91,6 @@ further ITree, or an IBlob.
 
 # Usage
 
-This library is currently used by ShortwaveMedia to collect a remotely updated description of its media tree. It is envisaged that the library could be very useful for connecting a software developer to all installations of their app, allowing them to distribute richer content than they could with, for instance, an RSS feed.
+This library is currently used by ohMediaToolkit to collect a remotely updated description of its media tree. It is envisaged that the library could be very useful for connecting a software developer to all installations of their app, allowing them to distribute richer content than they could with, for instance, an RSS feed.
 
 i.e. plugins, blacklists/whitelists, examples, seasonal skins, etc
