@@ -44,6 +44,6 @@ $(objdir) :
 	copy /Y SharpZipLib\ICSharpCode.SharpZipLib.dll Build\Obj\$(platform)\$(build)
 
 clean:
-	del /S /Q Build\Obj\$(platform)\$(build)
+	rd /S /Q Build\Obj\$(platform)\$(build)
 
 include Common.mak
