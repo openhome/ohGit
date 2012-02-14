@@ -255,12 +255,6 @@ namespace OpenHome.Git
                 index += part.Length;
             }
 
-            FileStream test = File.Create("test.pack");
-            test.Write(pack, 0, pack.Length);
-            test.Flush();
-            test.Close();
-
-
             // Read pack header
 
             MemoryStream pstream = new MemoryStream(pack);
