@@ -16,7 +16,11 @@ platform_compflags = -DPLATFORM_MACOSX_GNU -arch x86_64 -mmacosx-version-min=10.
 platform_linkflags = -arch x86_64 -framework IOKit -framework CoreFoundation -framework CoreAudio -framework SystemConfiguration
 platform_dllflags = -install_name @executable_path/$(@F)
 platform_include = -I/System/Library/Frameworks/IOKit.framework/Headers/
-platform = Mac
+ifeq ($(mac-64),1)
+platform = Mac-x64
+else
+platform = Mac-x86
+endif
 else
 platform_compflags = -Wno-psabi
 platform_linkflags = 
