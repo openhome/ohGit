@@ -81,6 +81,25 @@ namespace OpenHome.Git
             return (repository);
         }
 
+        public static void Remove(string aPath)
+        {
+            string path = Path.Combine(aPath, ".git");
+
+            if (!Directory.Exists(path))
+            {
+                throw (new GitStoreError("Repository does not exist"));
+            }
+
+            try
+            {
+                Directory.Delete(path, true);
+            }
+            catch
+            {
+                throw (new GitStoreError("Unable to remove repository"));
+            }
+        }
+
         public Repository(string aPath)
         {
             string path = Path.Combine(aPath, ".git");

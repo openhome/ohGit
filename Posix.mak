@@ -56,7 +56,7 @@ make_obj_dir : $(objdir)
 
 $(objdir) :
 	mkdir -p $(objdir)
-	cp SharpZipLib/ICSharpCode.SharpZipLib.dll $(objdir)
+	cp packages/SharpZipLib.0.86.0/lib/20/ICSharpCode.SharpZipLib.dll $(objdir)
 
 clean:
 	rm -rf $(objdir)

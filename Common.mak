@@ -19,6 +19,6 @@ $(objdir)/ohGit.dll : $(objdir) $(source)
 	$(csharp) /unsafe /t:library \
 		/out:$(objdir)/ohGit.dll \
 		/reference:System.dll \
-		/reference:SharpZipLib/ICSharpCode.SharpZipLib.dll \
+		/reference:$(objdir)/ICSharpCode.SharpZipLib.dll \
 		$(source)
 

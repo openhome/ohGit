@@ -118,6 +118,11 @@ namespace OpenHome.Git
             return (new Repository(aPath));
         }
 
+        public static void RemoveRepository(string aPath)
+        {
+            Repository.Remove(aPath);
+        }
+
         public static bool Fetch(IRepository aRepository, string aUri)
         {
             return (Fetcher.Fetch(aRepository, aUri));
