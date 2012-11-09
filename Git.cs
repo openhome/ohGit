@@ -18,7 +18,7 @@ namespace OpenHome.Git
     {
         string Name { get; }
         ICommit Commit { get; }
-        IChange CreateChange();
+        //IChange CreateChange();
         bool IsEmpty { get; }
     }
 
@@ -33,6 +33,8 @@ namespace OpenHome.Git
         string Head { get; }
         IDictionary<string, IBranch> Branches { get; }
         IDictionary<string, IRef> Refs { get; }
+        void Delete();
+        bool Fetch();
     }
 
     public interface IObjectResolver
@@ -88,49 +90,23 @@ namespace OpenHome.Git
         IObject Item { get; }
     }
 
-    public interface ITreeModifiable
+    public static class GitFactory
     {
-        ITreeModifiable AddTree(string aName, string aMode);
-        ITreeModifiable ModifyTree(string aName);
-        void AddBlob(byte[] aContents, string aName, string aMode);
-        void ModifyBlob(byte[] aContents, string aName);
-        void ChangeMode(string aName, string aMode);
-        void Delete(string aName);
-    }
-
-    public interface IChange
-    {
-        IBranch Branch { get; }
-        ITreeModifiable Root { get; }
-        void AddParent(IBranch aBranch);
-        ICommit Write(IPerson aAuthor, IPerson aCommitter, string aDescription);
-    }
-
-    public class Factory
-    {
-        public static IRepository InitialiseRepository(string aPath, string aBranch)
+        public static IRepository Open(string aPath, string aUri, string aBranch)
         {
-            return (Repository.Initialise(aPath, aBranch));
+            return (new Repository(aPath, aUri, aBranch));
         }
 
-        public static IRepository OpenRepository(string aPath)
+        public static IRepository Open(string aPath, string aUri)
         {
-            return (new Repository(aPath));
+            return (Open(aPath, aUri, "master"));
         }
 
-        public static void RemoveRepository(string aPath)
-        {
-            Repository.Remove(aPath);
-        }
-
-        public static bool Fetch(IRepository aRepository, string aUri)
-        {
-            return (Fetcher.Fetch(aRepository, aUri));
-        }
-
+        /*
         public static IPerson CreatePerson(string aName, string aEmail)
         {
             return (Person.Create(aName, aEmail));
         }
+        */
     }
 }

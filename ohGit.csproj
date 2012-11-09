@@ -45,7 +45,7 @@
     <Compile Include="Change.cs" />
     <Compile Include="Commit.cs" />
     <None Include="Config.cs" />
-    <Compile Include="Factory.cs" />
+    <Compile Include="Git.cs" />
     <Compile Include="Fetcher.cs" />
     <Compile Include="Hash.cs" />
     <Compile Include="Object.cs" />

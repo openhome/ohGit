@@ -5,8 +5,8 @@ Blob.cs \
 Branch.cs \
 Change.cs \
 Commit.cs \
-Factory.cs \
 Fetcher.cs \
+Git.cs \
 Hash.cs \
 Object.cs \
 Pack.cs \

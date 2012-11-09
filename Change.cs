@@ -6,6 +6,24 @@ using System.Text;
 
 namespace OpenHome.Git
 {
+    public interface ITreeModifiable
+    {
+        ITreeModifiable AddTree(string aName, string aMode);
+        ITreeModifiable ModifyTree(string aName);
+        void AddBlob(byte[] aContents, string aName, string aMode);
+        void ModifyBlob(byte[] aContents, string aName);
+        void ChangeMode(string aName, string aMode);
+        void Delete(string aName);
+    }
+
+    public interface IChange
+    {
+        IBranch Branch { get; }
+        ITreeModifiable Root { get; }
+        void AddParent(IBranch aBranch);
+        ICommit Write(IPerson aAuthor, IPerson aCommitter, string aDescription);
+    }
+    
     class BlobModifiable
     {
         internal BlobModifiable(Repository aRepository, byte[] aContents)
@@ -91,7 +109,7 @@ namespace OpenHome.Git
 
             if (iTreeModifyList.ContainsKey(aName))
             {
-                throw (new GitStoreError(aName + " already staged for modification"));
+                throw (new GitError(aName + " already staged for modification"));
             }
 
             ITreeEntry item = Find(aName);
@@ -108,7 +126,7 @@ namespace OpenHome.Git
                 }
             }
 
-            throw (new GitStoreError(aName + " not found"));
+            throw (new GitError(aName + " not found"));
         }
 
         public void AddBlob(byte[] aContents, string aName, string aMode)
@@ -132,7 +150,7 @@ namespace OpenHome.Git
 
             if (iBlobModifyList.ContainsKey(aName))
             {
-                throw (new GitStoreError(aName + " already staged for modification"));
+                throw (new GitError(aName + " already staged for modification"));
             }
 
             ITreeEntry item = Find(aName);
@@ -150,7 +168,7 @@ namespace OpenHome.Git
                 }
             }
 
-            throw (new GitStoreError(aName + " not found"));
+            throw (new GitError(aName + " not found"));
         }
 
         public void ChangeMode(string aName, string aMode)
@@ -161,12 +179,12 @@ namespace OpenHome.Git
 
             if (iModeChangeList.ContainsKey(aName))
             {
-                throw (new GitStoreError(aName + " already staged for mode change"));
+                throw (new GitError(aName + " already staged for mode change"));
             }
 
             if (Find(aName) == null)
             {
-                throw (new GitStoreError(aName + " not found"));
+                throw (new GitError(aName + " not found"));
             }
 
             iModified = true;
@@ -182,12 +200,12 @@ namespace OpenHome.Git
 
             if (iModeChangeList.ContainsKey(aName))
             {
-                throw (new GitStoreError(aName + " already staged for mode change"));
+                throw (new GitError(aName + " already staged for mode change"));
             }
 
             if (Find(aName) == null)
             {
-                throw (new GitStoreError(aName + " not found"));
+                throw (new GitError(aName + " not found"));
             }
 
             iModified = true;
@@ -207,12 +225,12 @@ namespace OpenHome.Git
         {
             if (iTreeAddList.ContainsKey(aName) || iBlobAddList.ContainsKey(aName))
             {
-                throw (new GitStoreError(aName + " already staged for addition"));
+                throw (new GitError(aName + " already staged for addition"));
             }
 
             if (Find(aName) != null)
             {
-                throw (new GitStoreError(aName + " already exists"));
+                throw (new GitError(aName + " already exists"));
             }
         }
 
@@ -220,7 +238,7 @@ namespace OpenHome.Git
         {
             if (iDeleteList.Contains(aName))
             {
-                throw (new GitStoreError(aName + " already staged for deletion"));
+                throw (new GitError(aName + " already staged for deletion"));
             }
         }
 
@@ -312,7 +330,7 @@ namespace OpenHome.Git
         {
             if (iWritten)
             {
-                throw (new GitStoreError("Already written"));
+                throw (new GitError("Already written"));
             }
         }
 
@@ -410,7 +428,7 @@ namespace OpenHome.Git
 
             if (iParents.Contains(aBranch))
             {
-                throw (new GitStoreError("Branch already added"));
+                throw (new GitError("Branch already added"));
             }
 
             iParents.Add(aBranch);
@@ -426,7 +444,7 @@ namespace OpenHome.Git
 
             if (!iRoot.Modified)
             {
-                throw (new GitStoreError("No modifiction"));
+                throw (new GitError("No modifiction"));
             }
 
             // TODO clean this up
@@ -442,7 +460,7 @@ namespace OpenHome.Git
         {
             if (iWritten)
             {
-                throw (new GitStoreError("Already written"));
+                throw (new GitError("Already written"));
             }
         }
 

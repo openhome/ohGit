@@ -12,108 +12,123 @@ namespace OpenHome.Git
 {
     internal class Repository : IRepository
     {
-        public static IRepository Initialise(string aPath, string aBranch)
+        private readonly string iPath;
+        private readonly string iUri;
+        private readonly string iBranch;
+
+        private readonly DirectoryInfo iFolder;
+        private readonly DirectoryInfo iFolderGit;
+        private readonly DirectoryInfo iFolderObjects;
+        private readonly DirectoryInfo iFolderInfo;
+        private readonly DirectoryInfo iFolderPack;
+        private readonly DirectoryInfo iFolderRefs;
+        private readonly DirectoryInfo iFolderHeads;
+        private readonly DirectoryInfo iFolderTags;
+        //private readonly DirectoryInfo iFolderRemotes;
+
+        private string iHead;
+        private Dictionary<string, IBranch> iBranches;
+        private Dictionary<string, IRef> iRefs;
+
+        private List<Pack> iPacks;
+
+        private Hash iHash;
+
+        public Repository(string aPath, string aUri, string aBranch)
         {
-            if (Directory.Exists(Path.Combine(aPath, ".git")))
+            iPath = aPath;
+            iUri = aUri;
+            iBranch = aBranch;
+
+            while (true)
             {
-                throw (new GitStoreError("Repository already exists"));
+                if (!Directory.Exists(aPath))
+                {
+                    iFolder = Directory.CreateDirectory(iPath);
+
+                    iFolderGit = iFolder.CreateSubdirectory(".git");
+
+                    //DirectoryInfo hooks = git.CreateSubdirectory("hooks");
+                    iFolderObjects = iFolderGit.CreateSubdirectory("objects");
+                    iFolderInfo = iFolderObjects.CreateSubdirectory("info");
+                    iFolderPack = iFolderObjects.CreateSubdirectory("pack");
+
+                    iFolderRefs = iFolderGit.CreateSubdirectory("refs");
+                    iFolderHeads = iFolderRefs.CreateSubdirectory("heads");
+                    iFolderTags = iFolderRefs.CreateSubdirectory("tags");
+
+                    var info = iFolderGit.CreateSubdirectory("info");
+
+                    using (var exclude = new FileStream(Path.Combine(info.FullName, "exclude"), FileMode.CreateNew, FileAccess.Write))
+                    {
+                        using (var writer = new StreamWriter(exclude))
+                        {
+                            writer.Write("# git-ls-files --others --exclude-from=.git/info/exclude\n");
+                            writer.Write("# Lines that start with '#' are comments.\n");
+                            writer.Write("# For a project mostly in C, the following would be a good set of\n");
+                            writer.Write("# exclude patterns (uncomment them if you want to use them):\n");
+                            writer.Write("# *.[oa]\n");
+                            writer.Write("# *~\n");
+                        }
+                    }
+
+                    using (var head = new FileStream(Path.Combine(iFolderGit.FullName, "HEAD"), FileMode.CreateNew, FileAccess.Write))
+                    {
+                        using (var writer = new StreamWriter(head))
+                        {
+                            writer.Write("ref: refs/heads/" + aBranch + "\n");
+                        }
+                    }
+
+                    using (var description = new FileStream(Path.Combine(iFolderGit.FullName, "description"), FileMode.CreateNew, FileAccess.Write))
+                    {
+                        using (var writer = new StreamWriter(description))
+                        {
+                            writer.Write("Unnamed repository; edit this file 'description' to name the repository.\n");
+                        }
+                    }
+
+                    using (var config = new FileStream(Path.Combine(iFolderGit.FullName, "config"), FileMode.CreateNew, FileAccess.Write))
+                    {
+                        using (var writer = new StreamWriter(config))
+                        {
+                            writer.Write("[core]\n");
+                            writer.Write("\trepositoryformatversion = 0\n");
+                            writer.Write("\tfilemode = false\n");
+                            writer.Write("\tbare = false\n");
+                            writer.Write("\tlogallrefupdates = true\n");
+                            writer.Write("\tsymlinks = false\n");
+                            writer.Write("\tignorecase = true\n");
+                            writer.Write("\thideDotFiles = dotGitOnly\n");
+                            writer.Write("[remote \"origin\"]\n");
+                            writer.Write("\turl = {0}\n", iUri);
+                            writer.Write("[branch \"master\"]\n");
+                            writer.Write("\tremote = origin\n");
+                        }
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        iFolder = new DirectoryInfo(iPath);
+                        iFolderGit = GetSubFolder(iFolder, ".git");
+                        iFolderObjects = GetSubFolder(iFolderGit, "objects");
+                        iFolderInfo = GetSubFolder(iFolderObjects, "info");
+                        iFolderPack = GetSubFolder(iFolderObjects, "pack");
+                        iFolderRefs = GetSubFolder(iFolderGit, "refs");
+                        iFolderHeads = GetSubFolder(iFolderRefs, "heads");
+                        iFolderTags = GetSubFolder(iFolderRefs, "tags");
+                        //iFolderRemotes = GetSubFolder(iFolderRefs, "remotes");
+                        break;
+                    }
+                    catch
+                    {
+                        Delete();
+                    }
+                }
             }
 
-            try
-            {
-                DirectoryInfo folder = Directory.CreateDirectory(aPath);
-
-                DirectoryInfo git = folder.CreateSubdirectory(".git");
-
-                //DirectoryInfo hooks = git.CreateSubdirectory("hooks");
-                DirectoryInfo objects = git.CreateSubdirectory("objects");
-                objects.CreateSubdirectory("info");
-                objects.CreateSubdirectory("pack");
-
-                DirectoryInfo refs = git.CreateSubdirectory("refs");
-                refs.CreateSubdirectory("heads");
-                refs.CreateSubdirectory("tags");
-
-                DirectoryInfo info = git.CreateSubdirectory("info");
-                FileStream exclude = File.Create(Path.Combine(info.FullName, "exclude"));
-                StreamWriter excludeWriter = new StreamWriter(exclude);
-                excludeWriter.Write("# git-ls-files --others --exclude-from=.git/info/exclude\n");
-                excludeWriter.Write("# Lines that start with '#' are comments.\n");
-                excludeWriter.Write("# For a project mostly in C, the following would be a good set of\n");
-                excludeWriter.Write("# exclude patterns (uncomment them if you want to use them):\n");
-                excludeWriter.Write("# *.[oa]\n");
-                excludeWriter.Write("# *~\n");
-                excludeWriter.Flush();
-                exclude.Close();
-
-                FileStream head = File.Create(Path.Combine(git.FullName, "HEAD"));
-                StreamWriter headWriter = new StreamWriter(head);
-                headWriter.Write("ref: refs/heads/" + aBranch + "\n");
-                headWriter.Flush();
-                head.Close();
-
-                FileStream description = File.Create(Path.Combine(git.FullName, "description"));
-                StreamWriter descriptionWriter = new StreamWriter(description);
-                descriptionWriter.Write("Unnamed repository; edit this file 'description' to name the repository.\n");
-                descriptionWriter.Flush();
-                description.Close();
-
-                FileStream config = File.Create(Path.Combine(git.FullName, "config"));
-                StreamWriter configWriter = new StreamWriter(config);
-                configWriter.Write("[core]\n");
-                configWriter.Write("\trepositoryformatversion = 0\n");
-                configWriter.Write("\tfilemode = false\n");
-                configWriter.Write("\tbare = false\n");
-                configWriter.Write("\tlogallrefupdates = true\n");
-                configWriter.Write("\tsymlinks = false\n");
-                configWriter.Write("\tignorecase = true\n");
-                configWriter.Write("\thideDotFiles = dotGitOnly\n");
-                configWriter.Flush();
-                config.Close();
-            }
-            catch (Exception e)
-            {
-                throw (new GitStoreError("Unable to create specified repository", e));
-            }
-
-            Repository repository = new Repository(aPath);
-
-            return (repository);
-        }
-
-        public static void Remove(string aPath)
-        {
-            string path = Path.Combine(aPath, ".git");
-
-            if (!Directory.Exists(path))
-            {
-                throw (new GitStoreError("Repository does not exist"));
-            }
-
-            try
-            {
-                Directory.Delete(path, true);
-            }
-            catch
-            {
-                throw (new GitStoreError("Unable to remove repository"));
-            }
-        }
-
-        public Repository(string aPath)
-        {
-            string path = Path.Combine(aPath, ".git");
-
-            try
-            {
-                iFolder = new DirectoryInfo(path);
-            }
-            catch (Exception e)
-            {
-                throw (new GitStoreError("Failed to open the specified git repository", e));
-            }
-
-            FindFolders();
             FindBranches();
             FindHead();
             FindTags();
@@ -123,27 +138,22 @@ namespace OpenHome.Git
             iHash = new Hash();
         }
 
-        public string Head
+        private DirectoryInfo GetSubFolder(DirectoryInfo aFolder, string aSubFolder)
         {
-            get
-            {
-                return (iHead);
-            }
+            var path = Path.Combine(aFolder.FullName, aSubFolder);
+            return (new DirectoryInfo(path));
         }
 
-        public IDictionary<string, IBranch> Branches
+        private FileInfo[] GetSubFolderFiles(DirectoryInfo aFolder)
         {
-            get
+            try
             {
-                return (iBranches);
+                FileInfo[] files = aFolder.GetFiles();
+                return (files);
             }
-        }
-
-        public IDictionary<string, IRef> Refs
-        {
-            get
+            catch (Exception e)
             {
-                return (iRefs);
+                throw (new GitError("Error accessing " + aFolder.Name + " files", e));
             }
         }
 
@@ -172,16 +182,16 @@ namespace OpenHome.Git
                 return (id);
             }
 
-            FileStream file = File.Create(path);
+            using (var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
+            {
+                DeflaterOutputStream deflater = new DeflaterOutputStream(file);
 
-            DeflaterOutputStream deflater = new DeflaterOutputStream(file);
-            BinaryWriter binary = new BinaryWriter(deflater);
-            binary.Write(obj);
-            binary.Flush();
-
-            deflater.Finish();
-
-            file.Close();
+                using (var writer = new BinaryWriter(deflater))
+                {
+                    writer.Write(obj);
+                    deflater.Finish();
+                }
+            }
 
             return (id);
         }
@@ -192,16 +202,16 @@ namespace OpenHome.Git
 
             if (File.Exists(path))
             {
-                throw (new GitStoreError("Branch already exists"));
+                throw (new GitError("Branch already exists"));
             }
 
-            FileStream file = File.Create(path);
-            
-            StreamWriter writer = new StreamWriter(file);
-            writer.Write(aId + "\n");
-            writer.Flush();
-            
-            file.Close();
+            using (var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
+            {
+                using (var writer = new StreamWriter(file))
+                {
+                    writer.Write(aId + "\n");
+                }
+            }
 
             FileInfo info = new FileInfo(path);
 
@@ -212,14 +222,6 @@ namespace OpenHome.Git
             return (branch);
         }
 
-        private void FindFolders()
-        {
-            iFolderHeads = GetSubFolder(Path.Combine("refs", "heads"));
-            iFolderObjects = GetSubFolder("objects");
-            iFolderTags = GetSubFolder(Path.Combine("refs", "tags"));
-            //iFolderRemotes = GetSubFolder(Path.Combine("refs", "remotes"));
-            iFolderPack = GetSubFolder(Path.Combine("objects", "pack"));
-        }
 
         private void FindBranches()
         {
@@ -239,18 +241,20 @@ namespace OpenHome.Git
 
             FileInfo info = new FileInfo(path);
 
-            FileStream file = info.Create();
-            StreamWriter writer = new StreamWriter(file);
-            writer.Write(aId + "\n");
-            writer.Flush();
-            file.Close();
+            using (var file = info.Create())
+            {
+                using (var writer = new StreamWriter(file))
+                {
+                    writer.Write(aId + "\n");
+                }
+            }
 
             aBranch.Update(new BranchFile(this, info));
         }
 
         private void FindHead()
         {
-            FileStream head = File.OpenRead(Path.Combine(iFolder.FullName, "HEAD"));
+            FileStream head = File.OpenRead(Path.Combine(iFolderGit.FullName, "HEAD"));
             StreamReader reader = new StreamReader(head);
             string contents = reader.ReadToEnd();
             head.Close();
@@ -264,17 +268,17 @@ namespace OpenHome.Git
 
             if (parts.Length != 2)
             {
-                throw (new GitStoreError("HEAD file corrupt"));
+                throw (new GitError("HEAD file corrupt"));
             }
 
             if (parts[0] != "ref:")
             {
-                throw (new GitStoreError("HEAD file corrupt"));
+                throw (new GitError("HEAD file corrupt"));
             }
 
             if (!parts[1].StartsWith("refs/heads/"))
             {
-                throw (new GitStoreError("HEAD file corrupt"));
+                throw (new GitError("HEAD file corrupt"));
             }
 
             iHead = parts[1].Substring(11);
@@ -290,7 +294,7 @@ namespace OpenHome.Git
                 return;
             }
 
-            throw (new GitStoreError("HEAD file corrupt"));
+            throw (new GitError("HEAD file corrupt"));
         }
 
         void FindTags()
@@ -307,7 +311,7 @@ namespace OpenHome.Git
 
         private void FindPackedRefs()
         {
-            string packedRefsPath = Path.Combine(iFolder.FullName, "packed-refs");
+            string packedRefsPath = Path.Combine(iFolderGit.FullName, "packed-refs");
 
             try
             {
@@ -346,7 +350,7 @@ namespace OpenHome.Git
                     }
                 }
             }
-            catch (Exception)
+            catch
             {
             }
         }
@@ -366,32 +370,6 @@ namespace OpenHome.Git
             }
         }
 
-        private DirectoryInfo GetSubFolder(string aPath)
-        {
-            try
-            {
-                string path = Path.Combine(iFolder.FullName, aPath);
-                return (new DirectoryInfo(path));
-            }
-            catch (Exception e)
-            {
-                throw (new GitStoreError("Specified repository does not contain a " + aPath + " folder", e));
-            }
-        }
-
-        private FileInfo[] GetSubFolderFiles(DirectoryInfo aFolder)
-        {
-            try
-            {
-                FileInfo[] files = aFolder.GetFiles();
-                return (files);
-            }
-            catch (Exception e)
-            {
-                throw (new GitStoreError("Error accessing " + aFolder.Name + " files", e));
-            }
-        }
-
         internal Object GetObject(string aId)
         {
             Object obj = GetObjectLoose(aId);
@@ -402,7 +380,7 @@ namespace OpenHome.Git
 
                 if (obj == null)
                 {
-                    throw (new GitStoreError("Unable to read object " + aId));
+                    throw (new GitError("Unable to read object " + aId));
                 }
             }
 
@@ -444,7 +422,7 @@ namespace OpenHome.Git
 
                     if (offset >= 100)
                     {
-                        throw (new GitStoreError("Illegal object header " + aId));
+                        throw (new GitError("Illegal object header " + aId));
                     }
 
                     header[offset++] = (byte)b;
@@ -454,14 +432,14 @@ namespace OpenHome.Git
 
                 if (parts.Length != 2)
                 {
-                    throw (new GitStoreError("Illegal object header " + aId));
+                    throw (new GitError("Illegal object header " + aId));
                 }
 
                 int length;
 
                 if (!int.TryParse(parts[1], out length))
                 {
-                    throw (new GitStoreError("Illegal object length " + aId));
+                    throw (new GitError("Illegal object length " + aId));
                 }
 
                 byte[] bytes = new byte[length];
@@ -479,16 +457,16 @@ namespace OpenHome.Git
                     case "blob":
                         return (new Object(EObjectType.Blob, bytes));
                     default:
-                        throw (new GitStoreError("Unrecognised object type " + aId));
+                        throw (new GitError("Unrecognised object type " + aId));
                 }
             }
-            catch (GitStoreError)
+            catch (GitError)
             {
                 throw;
             }
             catch (Exception e)
             {
-                throw (new GitStoreError("Unable to read object " + aId, e));
+                throw (new GitError("Unable to read object " + aId, e));
             }
         }
 
@@ -507,19 +485,40 @@ namespace OpenHome.Git
             return (null);
         }
 
-        private DirectoryInfo iFolder;
-        private DirectoryInfo iFolderHeads;
-        private DirectoryInfo iFolderObjects;
-        private DirectoryInfo iFolderTags;
-        //private DirectoryInfo iFolderRemotes;
-        private DirectoryInfo iFolderPack;
+        // IRepository
 
-        private string iHead;
-        private Dictionary<string, IBranch> iBranches;
-        private Dictionary<string, IRef> iRefs;
-        
-        private List<Pack> iPacks;
+        public string Head
+        {
+            get
+            {
+                return (iHead);
+            }
+        }
 
-        private Hash iHash;
+        public IDictionary<string, IBranch> Branches
+        {
+            get
+            {
+                return (iBranches);
+            }
+        }
+
+        public IDictionary<string, IRef> Refs
+        {
+            get
+            {
+                return (iRefs);
+            }
+        }
+
+        public void Delete()
+        {
+            Directory.Delete(iPath, true);
+        }
+
+        public bool Fetch()
+        {
+            return (Fetcher.Fetch(this, iUri));
+        }
     }
 }

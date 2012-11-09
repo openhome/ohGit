@@ -52,7 +52,7 @@ namespace OpenHome.Git
 
                     if (obj.Type != EObjectType.Commit)
                     {
-                        throw (new GitStoreError("Commit " + Id + " corrupt"));
+                        throw (new GitError("Commit " + Id + " corrupt"));
                     }
 
                     iContents = obj.Contents;
@@ -166,7 +166,7 @@ namespace OpenHome.Git
         {
             if (aCondition)
             {
-                throw (new GitStoreError("Commit " + Id + " corrupt"));
+                throw (new GitError("Commit " + Id + " corrupt"));
             }
         }
 
