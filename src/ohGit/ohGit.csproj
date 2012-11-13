@@ -35,7 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+      <HintPath>..\..\dependencies\nuget\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
@@ -55,7 +55,6 @@
     <Compile Include="OpenHome\Git\Repository.cs" />
     <Compile Include="OpenHome\Git\Tag.cs" />
     <Compile Include="OpenHome\Git\Tree.cs" />
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="..\SharedSettings.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
