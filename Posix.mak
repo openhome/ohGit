@@ -30,6 +30,7 @@ platform = Posix
 endif
 
 # Macros used by Common.mak
+dirsep = /
 
 objdir = Build/Obj/$(platform)/$(build)
 

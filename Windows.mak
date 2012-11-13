@@ -11,6 +11,7 @@ compdebug = /MTd /Zi /Od /RTC1
 !endif
 
 # Macros used by Common.mak
+dirsep = \\
 
 platform = Windows
 

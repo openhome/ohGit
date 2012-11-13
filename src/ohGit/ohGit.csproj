@@ -35,34 +35,36 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+      <HintPath>..\..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Blob.cs" />
-    <Compile Include="Branch.cs" />
-    <Compile Include="Change.cs" />
-    <Compile Include="Commit.cs" />
-    <None Include="Config.cs" />
-    <Compile Include="Git.cs" />
-    <Compile Include="Fetcher.cs" />
-    <Compile Include="Hash.cs" />
-    <Compile Include="Object.cs" />
-    <Compile Include="Pack.cs" />
-    <Compile Include="Person.cs" />
+    <Compile Include="OpenHome\Git\Blob.cs" />
+    <Compile Include="OpenHome\Git\Branch.cs" />
+    <Compile Include="OpenHome\Git\Change.cs" />
+    <Compile Include="OpenHome\Git\Commit.cs" />
+    <None Include="OpenHome\Git\Config.cs" />
+    <Compile Include="OpenHome\Git\Git.cs" />
+    <Compile Include="OpenHome\Git\Fetcher.cs" />
+    <Compile Include="OpenHome\Git\Hash.cs" />
+    <Compile Include="OpenHome\Git\Object.cs" />
+    <Compile Include="OpenHome\Git\Pack.cs" />
+    <Compile Include="OpenHome\Git\Person.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repository.cs" />
-    <Compile Include="Tag.cs" />
-    <Compile Include="Tree.cs" />
+    <Compile Include="OpenHome\Git\Repository.cs" />
+    <Compile Include="OpenHome\Git\Tag.cs" />
+    <Compile Include="OpenHome\Git\Tree.cs" />
     <None Include="packages.config" />
   </ItemGroup>
+  <Import Project="..\SharedSettings.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
+  <PropertyGroup>
+    <PackageName>ohGit-AnyPlatform-$(Configuration)</PackageName>
+    <PackageFilePatterns>ohGit.dll ohGit.*db</PackageFilePatterns>
+  </PropertyGroup>
   <Target Name="AfterBuild">
+    <MakeDir Directories="$(PackageOutputPath)" />
+    <Exec Command="..\..\go make_binball -b $(OutputPath) -p $(PackageName)/ $(PackageOutputPath)/$(PackageName).tar.gz $(PackageFilePatterns)" />
   </Target>
-  -->
 </Project>
