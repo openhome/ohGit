@@ -16,7 +16,7 @@ class Builder(OpenHomeBuilder):
         self.msbuild('src/ohGit.sln', target='Clean', configuration=self.configuration)
 
     def build(self):
-            self.msbuild('src/ohGit.sln', target='Build', configuration=self.configuration)
+        self.msbuild('src/ohGit.sln', target='Build', configuration=self.configuration)
 
     def publish(self):
         if self.options.auto and not self.platform == 'Linux-x86':
