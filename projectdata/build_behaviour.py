@@ -8,7 +8,7 @@ except ImportError:
     print "You need to update ohDevTools."
     sys.exit(1)
 
-require_version(19)
+require_version(22)
 
 
 class Builder(OpenHomeBuilder):
