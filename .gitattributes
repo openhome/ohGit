@@ -1,0 +1,10 @@
+*.csproj eol=crlf
+*.sln    eol=crlf
+*.bat    eol=crlf
+*.txt    text
+*.cs     text
+*.js     text
+*.css    text
+*.html   text
+*.in     text
+*.py     text
