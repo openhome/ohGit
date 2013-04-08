@@ -42,7 +42,7 @@ namespace OpenHome.Git
 
             while (true)
             {
-                if (!Directory.Exists(aPath))
+                if (!Directory.Exists(iPath))
                 {
                     // Create git from scratch
 
@@ -153,37 +153,45 @@ namespace OpenHome.Git
 
         private string GetRemoteUriFromConfig()
         {
-            using (var config = new FileStream(Path.Combine(iFolderGit.FullName, "config"), FileMode.Open, FileAccess.Read))
+            try
             {
-                using (var reader = new StreamReader(config))
+                using (var config = new FileStream(Path.Combine(iFolderGit.FullName, "config"), FileMode.Open, FileAccess.Read))
                 {
-                    var line = reader.ReadLine();
-
-                    if (line == null)
+                    using (var reader = new StreamReader(config))
                     {
-                        return (null);
-                    }
-
-                    if (line == "[remote \"origin\"]")
-                    {
-                        line = reader.ReadLine();
-
-                        if (line == null)
+                        while (true)
                         {
-                            return (null);
-                        }
+                            var line = reader.ReadLine();
 
-                        if (!line.StartsWith("\turl = "))
-                        {
-                            return (null);
-                        }
+                            if (line == null)
+                            {
+                                return (null);
+                            }
 
-                        return (line.Substring(7));
+                            if (line == "[remote \"origin\"]")
+                            {
+                                line = reader.ReadLine();
+
+                                if (line == null)
+                                {
+                                    return (null);
+                                }
+
+                                if (!line.StartsWith("\turl = "))
+                                {
+                                    return (null);
+                                }
+
+                                return (line.Substring(7));
+                            }
+                        }
                     }
                 }
             }
-
-            return (iUri);
+            catch
+            {
+                return (null);
+            }
         }
 
         private DirectoryInfo GetSubFolder(DirectoryInfo aFolder, string aSubFolder)
