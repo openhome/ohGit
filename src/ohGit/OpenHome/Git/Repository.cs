@@ -44,6 +44,8 @@ namespace OpenHome.Git
             {
                 if (!Directory.Exists(aPath))
                 {
+                    // Create git from scratch
+
                     iFolder = Directory.CreateDirectory(iPath);
 
                     iFolderGit = iFolder.CreateSubdirectory(".git");
@@ -109,6 +111,8 @@ namespace OpenHome.Git
                 }
                 else
                 {
+                    // Open existing git and check it matches
+
                     try
                     {
                         iFolder = new DirectoryInfo(iPath);
@@ -120,12 +124,21 @@ namespace OpenHome.Git
                         iFolderHeads = GetSubFolder(iFolderRefs, "heads");
                         iFolderTags = GetSubFolder(iFolderRefs, "tags");
                         //iFolderRemotes = GetSubFolder(iFolderRefs, "remotes");
-                        break;
+
+                        // Check this is the same git we nare opening
+
+                        var uri = GetRemoteUriFromConfig();
+
+                        if (uri == iUri)
+                        {
+                            break;
+                        }
                     }
                     catch
                     {
-                        Delete();
                     }
+
+                    Delete();
                 }
             }
 
@@ -136,6 +149,41 @@ namespace OpenHome.Git
             FindPacks();
 
             iHash = new Hash();
+        }
+
+        private string GetRemoteUriFromConfig()
+        {
+            using (var config = new FileStream(Path.Combine(iFolderGit.FullName, "config"), FileMode.Open, FileAccess.Read))
+            {
+                using (var reader = new StreamReader(config))
+                {
+                    var line = reader.ReadLine();
+
+                    if (line == null)
+                    {
+                        return (null);
+                    }
+
+                    if (line == "[remote \"origin\"]")
+                    {
+                        line = reader.ReadLine();
+
+                        if (line == null)
+                        {
+                            return (null);
+                        }
+
+                        if (!line.StartsWith("\turl = "))
+                        {
+                            return (null);
+                        }
+
+                        return (line.Substring(7));
+                    }
+                }
+            }
+
+            return (iUri);
         }
 
         private DirectoryInfo GetSubFolder(DirectoryInfo aFolder, string aSubFolder)
