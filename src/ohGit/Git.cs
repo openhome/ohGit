@@ -31,10 +31,10 @@ namespace OpenHome.Git
 
     public interface IRepository
     {
+        IBranch Branch(string aName);
+        IRef Ref(string aName);
         string Origin { get; }
         string Master { get; }
-        IDictionary<string, IBranch> Branches { get; }
-        IDictionary<string, IRef> Refs { get; }
         void Delete();
         bool Fetch();
     }

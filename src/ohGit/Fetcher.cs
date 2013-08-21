@@ -140,10 +140,10 @@ namespace OpenHome.Git
 
             foreach (KeyValuePair<string, string> entry in branches)
             {
-                if (aRepository.Branches.ContainsKey(entry.Key))
-                {
-                    IBranch branch = aRepository.Branches[entry.Key];
+                var branch = aRepository.Branch(entry.Key);
 
+                if (branch != null)
+                {
                     if (branch.IsEmpty || branch.Commit.Id != entry.Value)
                     {
                         update.Add(entry.Key, entry.Value);
@@ -189,7 +189,7 @@ namespace OpenHome.Git
 
             WriteZeroHeader(writer);
 
-            foreach (IBranch branch in aRepository.Branches.Values)
+            foreach (IBranch branch in aRepository.Branches)
             {
                 if (!branch.IsEmpty)
                 {
@@ -203,7 +203,7 @@ namespace OpenHome.Git
 
             // Read acks
 
-            foreach (IBranch branch in aRepository.Branches.Values)
+            foreach (IBranch branch in aRepository.Branches)
             {
                 string ack = ReadFetchRecord(reader);
 
@@ -308,15 +308,14 @@ namespace OpenHome.Git
 
             // Update existing branches
 
-            foreach (KeyValuePair<string, string> entry in update)
+            foreach (var entry in update)
             {
-                Branch branch = aRepository.Branches[entry.Key] as Branch;
-                aRepository.UpdateBranch(branch, entry.Value);
+                aRepository.UpdateBranch(entry.Key, entry.Value);
             }
 
             // Create new branches
 
-            foreach (KeyValuePair<string, string> entry in create)
+            foreach (var entry in create)
             {
                 aRepository.CreateBranch(entry.Key, entry.Value);
             }

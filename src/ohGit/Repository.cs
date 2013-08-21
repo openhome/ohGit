@@ -25,7 +25,7 @@ namespace OpenHome.Git
         private readonly DirectoryInfo iFolderHeads;
         private readonly DirectoryInfo iFolderTags;
         //private readonly DirectoryInfo iFolderRemotes;
-        private readonly IDictionary<string, IBranch> iBranches;
+        private readonly IDictionary<string, Branch> iBranches;
         private readonly IDictionary<string, IRef> iRefs;
         private readonly IList<Pack> iPacks;
         private readonly Hash iHash;
@@ -160,6 +160,14 @@ namespace OpenHome.Git
             iHash = new Hash();
         }
 
+        internal IEnumerable<IBranch> Branches
+        {
+            get
+            {
+                return (new List<IBranch>(iBranches.Values));
+            }
+        }
+
         private DirectoryInfo GetSubFolder(DirectoryInfo aFolder, string aSubFolder)
         {
             var path = Path.Combine(aFolder.FullName, aSubFolder);
@@ -238,11 +246,11 @@ namespace OpenHome.Git
             }
         }
 
-        private IDictionary<string, IBranch> FindBranches()
+        private IDictionary<string, Branch> FindBranches()
         {
             FileInfo[] files = GetSubFolderFiles(iFolderHeads);
 
-            var branches = new Dictionary<string, IBranch>();
+            var branches = new Dictionary<string, Branch>();
 
             foreach (FileInfo file in files)
             {
@@ -403,6 +411,18 @@ namespace OpenHome.Git
             return (branch);
         }
 
+        internal void UpdateBranch(string aName, string aId)
+        {
+            Branch branch = null;
+            
+            iBranches.TryGetValue(aName, out branch);
+
+            if (branch != null)
+            {
+                UpdateBranch(branch, aId);
+            }
+        }
+
         internal void UpdateBranch(Branch aBranch, string aId)
         {
             string path = Path.Combine(iFolderHeads.FullName, aBranch.Name);
@@ -553,20 +573,22 @@ namespace OpenHome.Git
             }
         }
 
-        public IDictionary<string, IBranch> Branches
+        public IBranch Branch(string aName)
         {
-            get
-            {
-                return (iBranches);
-            }
+            Branch value = null;
+
+            iBranches.TryGetValue(aName, out value);
+            
+            return (value);
         }
 
-        public IDictionary<string, IRef> Refs
+        public IRef Ref(string aName)
         {
-            get
-            {
-                return (iRefs);
-            }
+            IRef value = null;
+
+            iRefs.TryGetValue(aName, out value);
+            
+            return (value);
         }
 
         public void Delete()
