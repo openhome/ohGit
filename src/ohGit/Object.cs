@@ -29,7 +29,7 @@ namespace OpenHome.Git
                 case EObjectType.Tag:
                     return ("tag");
                 default:
-                    throw (new GitError("Unknown object type"));
+                    throw (new GitException("Unknown object type"));
             }
         }
 
@@ -78,7 +78,7 @@ namespace OpenHome.Git
                 case EObjectType.Tree:
                     return (new Tree(new TreeRef(aRepository, aId, iContents)));
                 default:
-                    throw (new GitError("Object " + aId + " corrupt"));
+                    throw (new GitException("Object " + aId + " corrupt"));
             }
         }
 
@@ -127,7 +127,7 @@ namespace OpenHome.Git
             {
                 if (iFileInfo.Length != kSha1Bytes + 1) // extra one for a newline
                 {
-                    throw (new GitError(iFileInfo.FullName + " is not " + kSha1Bytes + " in length"));
+                    throw (new GitException(iFileInfo.FullName + " is not " + kSha1Bytes + " in length"));
                 }
 
                 FileStream file = File.OpenRead(iFileInfo.FullName);
@@ -138,7 +138,7 @@ namespace OpenHome.Git
 
                 if (count != kSha1Bytes)
                 {
-                    throw (new GitError("Unable to read " + iFileInfo.FullName));
+                    throw (new GitException("Unable to read " + iFileInfo.FullName));
                 }
 
                 try
@@ -147,7 +147,7 @@ namespace OpenHome.Git
                 }
                 catch (Exception e)
                 {
-                    throw (new GitError(iFileInfo.FullName + " does not contain a sha1 object id", e));
+                    throw (new GitException(iFileInfo.FullName + " does not contain a sha1 object id", e));
                 }
             }
         }
@@ -168,18 +168,5 @@ namespace OpenHome.Git
         private Repository iRepository;
         private FileInfo iFileInfo;
         private string iId;
-    }
-
-    public class GitError : Exception
-    {
-        internal GitError(string aMessage)
-            : base(aMessage)
-        {
-        }
-
-        internal GitError(string aMessage, Exception aInnerException)
-            : base(aMessage, aInnerException)
-        {
-        }
     }
 }

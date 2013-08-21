@@ -19,7 +19,7 @@ namespace OpenHome.Git
 
             if (repository == null)
             {
-                throw (new GitError("Invalid repository"));
+                throw (new GitException("Invalid repository"));
             }
 
             Uri uri;
@@ -28,14 +28,14 @@ namespace OpenHome.Git
             {
                 uri = new Uri(aUri);
             }
-            catch (UriFormatException e)
+            catch (Exception e)
             {
-                throw (new GitError("Invalid uri", e));
+                throw (new GitException("Invalid uri", e));
             }
 
             if (uri.Scheme != "git")
             {
-                throw (new GitError("Invalid transfer protocol"));
+                throw (new GitException("Invalid transfer protocol"));
             }
 
             int port = 9418;
@@ -54,7 +54,7 @@ namespace OpenHome.Git
                     return (Fetch(repository, uri, client.GetStream()));
                 }
             }
-            catch (Exception)
+            catch
             {
             }
 
@@ -393,7 +393,7 @@ namespace OpenHome.Git
 
             if (space != " ")
             {
-                throw (new GitError("Communications error"));
+                throw (new GitException("Communications error"));
             }
 
             return (aReader.ReadBytes(len - 45));

@@ -9,8 +9,9 @@ namespace OpenHome.Git
         string Email { get; }
     }
 
-    public interface IPersonTime : IPerson
+    public interface IPersonTime
     {
+        IPerson Person { get; }
         DateTime Time { get; }
     }
 
@@ -30,7 +31,8 @@ namespace OpenHome.Git
 
     public interface IRepository
     {
-        string Head { get; }
+        string Origin { get; }
+        string Master { get; }
         IDictionary<string, IBranch> Branches { get; }
         IDictionary<string, IRef> Refs { get; }
         void Delete();
@@ -90,23 +92,21 @@ namespace OpenHome.Git
         IObject Item { get; }
     }
 
-    public static class GitFactory
+    public static class Factory
     {
-        public static IRepository Open(string aPath, string aUri, string aBranch)
+        public static IRepository Create(string aPath, string aOrigin, string aMaster)
         {
-            return (new Repository(aPath, aUri, aBranch));
+            return (new Repository(aPath, aOrigin, aMaster));
         }
 
-        public static IRepository Open(string aPath, string aUri)
+        public static IRepository Create(string aPath, string aUri)
         {
-            return (Open(aPath, aUri, "master"));
+            return (Create(aPath, aUri, "master"));
         }
 
-        /*
-        public static IPerson CreatePerson(string aName, string aEmail)
+        public static IRepository Open(string aPath)
         {
-            return (Person.Create(aName, aEmail));
+            return (new Repository(aPath));
         }
-        */
     }
 }

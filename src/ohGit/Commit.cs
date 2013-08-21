@@ -49,16 +49,19 @@ namespace OpenHome.Git
                 if (iContents == null)
                 {
                     Object obj = iRepository.GetObject(iId);
-
-                    if (obj.Type != EObjectType.Commit)
-                    {
-                        throw (new GitError("Commit " + Id + " corrupt"));
-                    }
-
+                    CorruptIf(obj.Type != EObjectType.Commit);
                     iContents = obj.Contents;
                 }
 
                 return (iContents);
+            }
+        }
+
+        internal void CorruptIf(bool aValue)
+        {
+            if (aValue)
+            {
+                throw (new GitCorruptCommitException(iId));
             }
         }
 
@@ -162,11 +165,11 @@ namespace OpenHome.Git
             return (new Commit(new CommitRef(aRepository, id, bytes)));
         }
 
-        private void CorruptIf(bool aCondition)
+        private void CorruptIf(bool aValue)
         {
-            if (aCondition)
+            if (aValue)
             {
-                throw (new GitError("Commit " + Id + " corrupt"));
+                throw (new GitCorruptCommitException(iReference.Id));
             }
         }
 

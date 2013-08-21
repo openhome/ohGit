@@ -40,21 +40,21 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="OpenHome\Git\Blob.cs" />
-    <Compile Include="OpenHome\Git\Branch.cs" />
-    <Compile Include="OpenHome\Git\Change.cs" />
-    <Compile Include="OpenHome\Git\Commit.cs" />
-    <None Include="OpenHome\Git\Config.cs" />
-    <Compile Include="OpenHome\Git\Git.cs" />
-    <Compile Include="OpenHome\Git\Fetcher.cs" />
-    <Compile Include="OpenHome\Git\Hash.cs" />
-    <Compile Include="OpenHome\Git\Object.cs" />
-    <Compile Include="OpenHome\Git\Pack.cs" />
-    <Compile Include="OpenHome\Git\Person.cs" />
+    <Compile Include="Blob.cs" />
+    <Compile Include="Branch.cs" />
+    <Compile Include="Change.cs" />
+    <Compile Include="Commit.cs" />
+    <Compile Include="Exception.cs" />
+    <Compile Include="Fetcher.cs" />
+    <Compile Include="Git.cs" />
+    <Compile Include="Hash.cs" />
+    <Compile Include="Object.cs" />
+    <Compile Include="Repository.cs" />
+    <Compile Include="Tag.cs" />
+    <Compile Include="Tree.cs" />
+    <Compile Include="Pack.cs" />
+    <Compile Include="Person.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="OpenHome\Git\Repository.cs" />
-    <Compile Include="OpenHome\Git\Tag.cs" />
-    <Compile Include="OpenHome\Git\Tree.cs" />
   </ItemGroup>
   <Import Project="..\SharedSettings.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

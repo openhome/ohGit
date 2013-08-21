@@ -144,7 +144,7 @@ namespace OpenHome.Git
         {
             if (aCondition)
             {
-                throw (new GitError("Tag " + iId + " corrupt"));
+                throw (new GitException("Tag " + iId + " corrupt"));
             }
         }
 
@@ -179,7 +179,7 @@ namespace OpenHome.Git
                     case EObjectType.Tree:
                         return ("tree");
                     default:
-                        throw (new GitError("Object type unknown"));
+                        throw (new GitException("Object type unknown"));
                 }
             }
         }
@@ -194,7 +194,7 @@ namespace OpenHome.Git
 
                     if (obj.Type != iType)
                     {
-                        throw (new GitError("Item " + iId + " corrupt"));
+                        throw (new GitException("Item " + iId + " corrupt"));
                     }
 
                     iObject = obj.Create(iRepository, iId);

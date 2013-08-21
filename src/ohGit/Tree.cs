@@ -26,7 +26,7 @@ namespace OpenHome.Git
 
             if (parts.Length != 2)
             {
-                throw (new GitError("Tree item corrupt"));
+                throw (new GitException("Tree item corrupt"));
             }
 
             iMode = parts[0];
@@ -150,7 +150,7 @@ namespace OpenHome.Git
 
                     if (obj.Type != EObjectType.Tree)
                     {
-                        throw (new GitError("Tree " + Id + " corrupt"));
+                        throw (new GitException("Tree " + Id + " corrupt"));
                     }
 
                     iContents = obj.Contents;
@@ -205,7 +205,7 @@ namespace OpenHome.Git
                 }
                 catch (IndexOutOfRangeException)
                 {
-                    throw (new GitError("Tree " + Id + " corrupt"));
+                    throw (new GitException("Tree " + Id + " corrupt"));
                 }
             }
             

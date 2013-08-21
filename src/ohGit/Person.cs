@@ -7,6 +7,9 @@ namespace OpenHome.Git
 {
     internal class Person : IPerson
     {
+        private readonly string iName;
+        private readonly string iEmail;
+
         internal static IPerson Create(string aName, string aEmail)
         {
             return (new Person(aName, aEmail));
@@ -33,36 +36,28 @@ namespace OpenHome.Git
                 return (iEmail);
             }
         }
-
-        string iName;
-        string iEmail;
     }
 
     internal class PersonTime : IPersonTime
     {
         static DateTime kYearDot = new DateTime(1970, 1, 1);
 
+        private readonly IPerson iPerson;
+        private readonly DateTime iTime;
+        private readonly string iTimeZone;
+
         private PersonTime(string aName, string aEmail, DateTime aTime, string aTimeZone)
         {
-            iName = aName;
-            iEmail = aEmail;
+            iPerson = new Person(aName, aEmail);
             iTime = aTime;
             iTimeZone = aTimeZone;
         }
 
-        public string Name
+        public IPerson Person
         {
             get
             {
-                return (iName);
-            }
-        }
-
-        public string Email
-        {
-            get
-            {
-                return (iEmail);
+                return (iPerson);
             }
         }
 
@@ -130,10 +125,5 @@ namespace OpenHome.Git
 
             return (builder.ToString());
         }
-
-        string iName;
-        string iEmail;
-        DateTime iTime;
-        string iTimeZone;
     }
 }

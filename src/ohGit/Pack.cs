@@ -34,14 +34,14 @@ namespace OpenHome.Git
 
                     if (signature != kGitIndexSignature)
                     {
-                        throw (new GitError("Pack index file " + iIndexPath + " has an invalid signature"));
+                        throw (new GitException("Pack index file " + iIndexPath + " has an invalid signature"));
                     }
 
                     uint version = reader.ReadUInt32();
 
                     if (version != kGitIndexVersion)
                     {
-                        throw (new GitError("Pack index file " + iIndexPath + " has an incomaptible version"));
+                        throw (new GitException("Pack index file " + iIndexPath + " has an incomaptible version"));
                     }
 
                     iIndexFanout = reader.ReadBytes(256 * 4);
@@ -54,13 +54,13 @@ namespace OpenHome.Git
                     //iChecksumPack = reader.ReadBytes(20);
                     //iChecksumIndex = reader.ReadBytes(20);
                 }
-                catch (GitError)
+                catch (GitException)
                 {
                     throw;
                 }
                 catch (Exception e)
                 {
-                    throw (new GitError("Unable to read " + iIndexPath, e));
+                    throw (new GitException("Unable to read " + iIndexPath, e));
                 }
             }
 
@@ -82,10 +82,10 @@ namespace OpenHome.Git
                 }
                 catch (Exception e)
                 {
-                    throw (new GitError("Unable to read " + iPackPath, e));
+                    throw (new GitException("Unable to read " + iPackPath, e));
                 }
 
-                throw (new GitError("Pack file " + iPackPath + " and index file " + iIndexPath + " containt unequal numbers of objects"));
+                throw (new GitException("Pack file " + iPackPath + " and index file " + iIndexPath + " containt unequal numbers of objects"));
             }
         }
 
@@ -95,7 +95,7 @@ namespace OpenHome.Git
 
             if (signature != kGitPackSignature)
             {
-                throw (new GitError("Pack has an invalid signature"));
+                throw (new GitException("Pack has an invalid signature"));
             }
         }
 
@@ -113,7 +113,7 @@ namespace OpenHome.Git
                 return (3);
             }
 
-            throw (new GitError("Pack file has an incomaptible version"));
+            throw (new GitException("Pack file has an incomaptible version"));
         }
 
         internal static uint ReadItemCount(BinaryReader aReader)
@@ -166,7 +166,7 @@ namespace OpenHome.Git
                     {
                         case 0:
                         case 5:
-                            throw (new GitError("Illegal object in " + iPackPath + " at offset " + aOffset));
+                            throw (new GitException("Illegal object in " + iPackPath + " at offset " + aOffset));
 
                         case 6:
                             uint offset = aOffset - ReadDeltaOffset(reader);
@@ -180,13 +180,13 @@ namespace OpenHome.Git
                             return (ReadObject(reader, type, length));
                     }
                 }
-                catch (GitError)
+                catch (GitException)
                 {
                     throw;
                 }
                 catch (Exception e)
                 {
-                    throw (new GitError("Unable to read " + iPackPath, e));
+                    throw (new GitException("Unable to read " + iPackPath, e));
                 }
             }
         }
