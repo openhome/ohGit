@@ -38,14 +38,15 @@ namespace OpenHome.Git
             iOrigin = aOrigin;
             iMaster = aMaster;
 
-            if (!Directory.Exists(iPath))
+            iFolder = new DirectoryInfo(iPath);
+
+            try
             {
-                throw (new DirectoryNotFoundException());
+                Directory.Delete(Path.Combine(iFolder.FullName, ".git"), true);
             }
-
-            // Create git from scratch
-
-            iFolder = Directory.CreateDirectory(iPath);
+            catch
+            {
+            }
 
             iFolderGit = iFolder.CreateSubdirectory(".git");
 
