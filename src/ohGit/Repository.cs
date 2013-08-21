@@ -591,11 +591,6 @@ namespace OpenHome.Git
             return (value);
         }
 
-        public void Delete()
-        {
-            Directory.Delete(iPath, true);
-        }
-
         public bool Fetch()
         {
             return (Fetcher.Fetch(this, iOrigin));

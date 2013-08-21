@@ -35,7 +35,6 @@ namespace OpenHome.Git
         IRef Ref(string aName);
         string Origin { get; }
         string Master { get; }
-        void Delete();
         bool Fetch();
     }
 
