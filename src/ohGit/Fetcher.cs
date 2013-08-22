@@ -63,18 +63,26 @@ namespace OpenHome.Git
 
         private static bool Fetch(Repository aRepository, Uri aUri, NetworkStream aStream)
         {
-            BinaryWriter writer = new BinaryWriter(aStream);
-            BinaryReader reader = new BinaryReader(aStream);
+            using (var writer = new BinaryWriter(aStream))
+            {
+                using (var reader = new BinaryReader(aStream))
+                {
+                    return (Fetch(aRepository, aUri, writer, reader));
+                }
+            }
+        }
 
+        private static bool Fetch(Repository aRepository, Uri aUri, BinaryWriter aWriter, BinaryReader aReader)
+        {
             // Request
 
-            WriteFetchRequest(aUri, writer);
+            WriteFetchRequest(aUri, aWriter);
 
             // Collect HEAD and capabilities
 
             string sha1;
 
-            byte[] bytes = ReadFetchHeader(reader, out sha1);
+            byte[] bytes = ReadFetchHeader(aReader, out sha1);
 
             if (bytes.Length < 5 || bytes[4] != 0)
             {
@@ -83,7 +91,7 @@ namespace OpenHome.Git
 
             string head = ASCIIEncoding.ASCII.GetString(bytes, 0, 4);
 
-            if (head != "HEAD" )
+            if (head != "HEAD")
             {
                 return (false);
             }
@@ -108,7 +116,7 @@ namespace OpenHome.Git
 
             while (true)
             {
-                bytes = ReadFetchHeader(reader, out sha1);
+                bytes = ReadFetchHeader(aReader, out sha1);
 
                 if (bytes == null)
                 {
@@ -173,7 +181,7 @@ namespace OpenHome.Git
             {
                 string want = "want " + entry + capabilities + "\n";
 
-                WriteFetchHeader(writer, want);
+                WriteFetchHeader(aWriter, want);
 
                 capabilities = String.Empty;
             }
@@ -182,12 +190,12 @@ namespace OpenHome.Git
             {
                 string want = "want " + entry + capabilities + "\n";
 
-                WriteFetchHeader(writer, want);
+                WriteFetchHeader(aWriter, want);
 
                 capabilities = String.Empty;
             }
 
-            WriteZeroHeader(writer);
+            WriteZeroHeader(aWriter);
 
             foreach (IBranch branch in aRepository.Branches)
             {
@@ -195,14 +203,27 @@ namespace OpenHome.Git
                 {
                     string have = "have " + branch.Commit.Id + "\n";
 
-                    WriteFetchHeader(writer, have);
+                    WriteFetchHeader(aWriter, have);
                 }
             }
 
-            WriteFetchHeader(writer, "done\n");
+            WriteFetchHeader(aWriter, "done\n");
 
             // Read acks
 
+            foreach (string entry in create.Values)
+            {
+                string ack = ReadFetchRecord(aReader);
+                //Console.WriteLine("CREATE: {0}", ack);
+            }
+
+            foreach (string entry in update.Values)
+            {
+                string ack = ReadFetchRecord(aReader);
+                //Console.WriteLine("UPDATE: {0}", ack);
+            }
+
+            /*
             foreach (IBranch branch in aRepository.Branches)
             {
                 string ack = ReadFetchRecord(reader);
@@ -222,6 +243,7 @@ namespace OpenHome.Git
                     }
                 }
             }
+            */
 
             // Collect pack parts
 
@@ -231,7 +253,7 @@ namespace OpenHome.Git
 
             while (true)
             {
-                byte[] part = reader.ReadBytes(10000);
+                byte[] part = aReader.ReadBytes(10000);
 
                 if (part.Length == 0)
                 {
@@ -257,53 +279,58 @@ namespace OpenHome.Git
 
             // Read pack header
 
-            MemoryStream pstream = new MemoryStream(pack);
-            BinaryReader preader = new BinaryReader(pstream);
-
-            Pack.ReadSignature(preader);
-            Pack.ReadVersion(preader);
-            uint objectcount = Pack.ReadItemCount(preader);
-
-            // Inflate items
-
-            Dictionary<long, Object> objects = new Dictionary<long, Object>();
-
-            while (objectcount-- > 0)
+            using (var pstream = new MemoryStream(pack))
             {
-                Object obj;
-
-                long length;
-
-                long start = pstream.Position;
-
-                int type = Pack.ReadItemTypeAndLength(preader, out length);
-
-                switch (type)
+                using (var preader = new BinaryReader(pstream))
                 {
-                    case 0:
-                    case 5:
-                        return (false);
+                    Pack.ReadSignature(preader);
 
-                    case 6:
-                        long offset = start - Pack.ReadDeltaOffset(preader);
-                        obj = Pack.ApplyDelta(preader, objects[offset], length);
-                        break;
+                    Pack.ReadVersion(preader);
+                    
+                    uint objectcount = Pack.ReadItemCount(preader);
 
-                    case 7:
-                        byte[] id = new byte[20];
-                        preader.Read(id, 0, 20);
-                        obj = Pack.ApplyDelta(preader, aRepository.GetObject(Hash.String(id)), length);
-                        break;
+                    // Inflate items
 
-                    default:
-                        obj = Pack.ReadObject(preader, type, length);
-                        break;
+                    Dictionary<long, Object> objects = new Dictionary<long, Object>();
 
+                    while (objectcount-- > 0)
+                    {
+                        Object obj;
+
+                        long length;
+
+                        long start = pstream.Position;
+
+                        int type = Pack.ReadItemTypeAndLength(preader, out length);
+
+                        switch (type)
+                        {
+                            case 0:
+                            case 5:
+                                return (false);
+
+                            case 6:
+                                long offset = start - Pack.ReadDeltaOffset(preader);
+                                obj = Pack.ApplyDelta(preader, objects[offset], length);
+                                break;
+
+                            case 7:
+                                byte[] id = new byte[20];
+                                preader.Read(id, 0, 20);
+                                obj = Pack.ApplyDelta(preader, aRepository.GetObject(Hash.String(id)), length);
+                                break;
+
+                            default:
+                                obj = Pack.ReadObject(preader, type, length);
+                                break;
+
+                        }
+
+                        objects.Add(start, obj);
+
+                        aRepository.WriteObject(obj.Contents, obj.Type);
+                    }
                 }
-
-                objects.Add(start, obj);
-
-                aRepository.WriteObject(obj.Contents, obj.Type);
             }
 
             // Update existing branches

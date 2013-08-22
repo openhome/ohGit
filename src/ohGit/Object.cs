@@ -116,22 +116,24 @@ namespace OpenHome.Git
         {
             get
             {
-                ReadId();
+                if (iId == null)
+                {
+                    ReadId();
+                }
+
                 return (iId);
             }
         }
 
         internal void ReadId()
         {
-            if (iId == null)
+            if (iFileInfo.Length != kSha1Bytes + 1) // extra one for a newline
             {
-                if (iFileInfo.Length != kSha1Bytes + 1) // extra one for a newline
-                {
-                    throw (new GitException(iFileInfo.FullName + " is not " + kSha1Bytes + " in length"));
-                }
+                throw (new GitException(iFileInfo.FullName + " is not " + kSha1Bytes + " in length"));
+            }
 
-                FileStream file = File.OpenRead(iFileInfo.FullName);
-
+            using (FileStream file = File.OpenRead(iFileInfo.FullName))
+            {
                 byte[] bytes = new byte[kSha1Bytes];
 
                 int count = file.Read(bytes, 0, kSha1Bytes);
@@ -143,7 +145,7 @@ namespace OpenHome.Git
 
                 try
                 {
-                    iId = System.Text.ASCIIEncoding.ASCII.GetString(bytes);
+                    iId = Encoding.ASCII.GetString(bytes);
                 }
                 catch (Exception e)
                 {
@@ -156,13 +158,14 @@ namespace OpenHome.Git
         {
             iId = aId;
 
-            FileStream file = iFileInfo.Create();
-
-            StreamWriter writer = new StreamWriter(file);
-            writer.Write(iId + "\n");
-            writer.Flush();
-
-            file.Close();
+            using (var file = iFileInfo.Create())
+            {
+                using (var writer = new StreamWriter(file))
+                {
+                    writer.Write(iId + "\n");
+                    writer.Flush();
+                }
+            }
         }
 
         private Repository iRepository;

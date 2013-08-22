@@ -44,7 +44,7 @@ namespace OpenHome.Git
             {
                 Directory.Delete(Path.Combine(iFolder.FullName, ".git"), true);
             }
-            catch
+            catch (DirectoryNotFoundException)
             {
             }
 
@@ -459,84 +459,72 @@ namespace OpenHome.Git
 
         private Object GetObjectLoose(string aId)
         {
-            FileStream file;
+            var path = Path.Combine(iFolderObjects.FullName, aId.Substring(0, 2), aId.Substring(2, 38));
 
             try
             {
-                string path = Path.Combine(iFolderObjects.FullName, aId.Substring(0, 2));
-                path = Path.Combine(path, aId.Substring(2, 38));
+                using (var file = File.OpenRead(path))
+                {
+                    using (var inflater = new InflaterInputStream(file))
+                    {
+                        int offset = 0;
 
-                file = File.OpenRead(path);
+                        byte[] header = new byte[100];
+
+                        while (true)
+                        {
+                            int b = inflater.ReadByte();
+
+                            if (b == 0)
+                            {
+                                break;
+                            }
+
+                            if (offset >= 100)
+                            {
+                                throw (new GitException("Illegal object header " + aId));
+                            }
+
+                            header[offset++] = (byte)b;
+                        }
+
+                        string[] parts = ASCIIEncoding.ASCII.GetString(header, 0, offset).Split(new char[] { ' ' });
+
+                        if (parts.Length != 2)
+                        {
+                            throw (new GitException("Illegal object header " + aId));
+                        }
+
+                        int length;
+
+                        if (!int.TryParse(parts[1], out length))
+                        {
+                            throw (new GitException("Illegal object length " + aId));
+                        }
+
+                        byte[] bytes = new byte[length];
+
+                        inflater.Read(bytes, 0, length);
+
+                        switch (parts[0])
+                        {
+                            case "commit":
+                                return (new Object(EObjectType.Commit, bytes));
+                            case "tag":
+                                return (new Object(EObjectType.Tag, bytes));
+                            case "tree":
+                                return (new Object(EObjectType.Tree, bytes));
+                            case "blob":
+                                return (new Object(EObjectType.Blob, bytes));
+                            default:
+                                throw (new GitException("Unrecognised object type " + aId));
+                        }
+                    }
+                }
             }
-            catch (Exception)
+            catch (FileNotFoundException)
             {
                 return (null);
-            }
-
-            try
-            {
-                InflaterInputStream inflater = new InflaterInputStream(file);
-
-                int offset = 0;
-
-                byte[] header = new byte[100];
-
-                while (true)
-                {
-                    int b = inflater.ReadByte();
-
-                    if (b == 0)
-                    {
-                        break;
-                    }
-
-                    if (offset >= 100)
-                    {
-                        throw (new GitException("Illegal object header " + aId));
-                    }
-
-                    header[offset++] = (byte)b;
-                }
-
-                string[] parts = ASCIIEncoding.ASCII.GetString(header, 0, offset).Split(new char[] { ' ' });
-
-                if (parts.Length != 2)
-                {
-                    throw (new GitException("Illegal object header " + aId));
-                }
-
-                int length;
-
-                if (!int.TryParse(parts[1], out length))
-                {
-                    throw (new GitException("Illegal object length " + aId));
-                }
-
-                byte[] bytes = new byte[length];
-
-                inflater.Read(bytes, 0, length);
-
-                switch (parts[0])
-                {
-                    case "commit":
-                        return (new Object(EObjectType.Commit, bytes));
-                    case "tag":
-                        return (new Object(EObjectType.Tag, bytes));
-                    case "tree":
-                        return (new Object(EObjectType.Tree, bytes));
-                    case "blob":
-                        return (new Object(EObjectType.Blob, bytes));
-                    default:
-                        throw (new GitException("Unrecognised object type " + aId));
-                }
-            }
-            catch (GitException)
-            {
-                throw;
-            }
-            catch (Exception e)
-            {
-                throw (new GitException("Unable to read object " + aId, e));
             }
         }
 

@@ -16,7 +16,7 @@ namespace OpenHome.Git
 
         const uint kGitPackVersion2 = 0x02000000;
         const uint kGitPackVersion3 = 0x02000000;
-        const uint kGitPackSignature = 0x4b434150;
+        const uint kGitPackSignature = 0x4b434150; // "PACK"
 
         internal Pack(string aIndexPath)
         {
