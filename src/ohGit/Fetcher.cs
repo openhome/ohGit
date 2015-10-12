@@ -63,12 +63,11 @@ namespace OpenHome.Git
 
         private static bool Fetch(Repository aRepository, Uri aUri, NetworkStream aStream)
         {
-            using (var writer = new BinaryWriter(aStream))
+            var writer = new BinaryWriter(aStream);
+
+            using (var reader = new BinaryReader(aStream))
             {
-                using (var reader = new BinaryReader(aStream))
-                {
-                    return (Fetch(aRepository, aUri, writer, reader));
-                }
+                return (Fetch(aRepository, aUri, writer, reader));
             }
         }
 
@@ -279,57 +278,56 @@ namespace OpenHome.Git
 
             // Read pack header
 
-            using (var pstream = new MemoryStream(pack))
+            var pstream = new MemoryStream(pack);
+
+            using (var preader = new BinaryReader(pstream))
             {
-                using (var preader = new BinaryReader(pstream))
+                Pack.ReadSignature(preader);
+
+                Pack.ReadVersion(preader);
+
+                uint objectcount = Pack.ReadItemCount(preader);
+
+                // Inflate items
+
+                Dictionary<long, Object> objects = new Dictionary<long, Object>();
+
+                while (objectcount-- > 0)
                 {
-                    Pack.ReadSignature(preader);
+                    Object obj;
 
-                    Pack.ReadVersion(preader);
-                    
-                    uint objectcount = Pack.ReadItemCount(preader);
+                    long length;
 
-                    // Inflate items
+                    long start = pstream.Position;
 
-                    Dictionary<long, Object> objects = new Dictionary<long, Object>();
+                    int type = Pack.ReadItemTypeAndLength(preader, out length);
 
-                    while (objectcount-- > 0)
+                    switch (type)
                     {
-                        Object obj;
+                        case 0:
+                        case 5:
+                            return (false);
 
-                        long length;
+                        case 6:
+                            long offset = start - Pack.ReadDeltaOffset(preader);
+                            obj = Pack.ApplyDelta(preader, objects[offset], length);
+                            break;
 
-                        long start = pstream.Position;
+                        case 7:
+                            byte[] id = new byte[20];
+                            preader.Read(id, 0, 20);
+                            obj = Pack.ApplyDelta(preader, aRepository.GetObject(Hash.String(id)), length);
+                            break;
 
-                        int type = Pack.ReadItemTypeAndLength(preader, out length);
+                        default:
+                            obj = Pack.ReadObject(preader, type, length);
+                            break;
 
-                        switch (type)
-                        {
-                            case 0:
-                            case 5:
-                                return (false);
-
-                            case 6:
-                                long offset = start - Pack.ReadDeltaOffset(preader);
-                                obj = Pack.ApplyDelta(preader, objects[offset], length);
-                                break;
-
-                            case 7:
-                                byte[] id = new byte[20];
-                                preader.Read(id, 0, 20);
-                                obj = Pack.ApplyDelta(preader, aRepository.GetObject(Hash.String(id)), length);
-                                break;
-
-                            default:
-                                obj = Pack.ReadObject(preader, type, length);
-                                break;
-
-                        }
-
-                        objects.Add(start, obj);
-
-                        aRepository.WriteObject(obj.Contents, obj.Type);
                     }
+
+                    objects.Add(start, obj);
+
+                    aRepository.WriteObject(obj.Contents, obj.Type);
                 }
             }
 

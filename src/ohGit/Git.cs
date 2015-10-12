@@ -29,7 +29,7 @@ namespace OpenHome.Git
         IObject Item { get; }
     }
 
-    public interface IRepository
+    public interface IRepository : IDisposable
     {
         IBranch Branch(string aName);
         IRef Ref(string aName);

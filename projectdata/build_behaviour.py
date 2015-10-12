@@ -17,11 +17,17 @@ class Builder(OpenHomeBuilder):
 
     def build(self):
         self.msbuild('src/ohGit.sln', target='Build', configuration=self.configuration)
+        self.pack_nuget('src/ohGit/ohGit.nuspec', 'build/ohGit/bin/{0}'.format(self.configuration))
 
     def publish(self):
-        if self.options.auto and not self.platform == 'Linux-x86':
-            # Only publish from one CI platform, Linux-x86.
+        if self.options.auto and not self.platform == 'Windows-x86':
+            print "Publish on %s platform is not enabled due to auto" % (self.platform)
+            # Only publish from one CI platform: Windows-x86.
             return
-        self.publish_package(
-            'ohGit-AnyPlatform-{configuration}.tar.gz',
-            'ohGit/ohGit-{version}-AnyPlatform-{configuration}.tar.gz')
+        # build the nuget package
+        if self.configuration == 'Release' and self.nuget_server is not None and self.nuget_api_key is not None:
+            print "Publishing nuget on %s platform is enabled" % (self.platform)
+            self.publish_nuget(os.path.join('build', 'packages', '*.nupkg'), self.nuget_api_key, self.nuget_server)
+        else:
+            print("Not publishing nuget dependency, nuget server and API key not specified")
+        

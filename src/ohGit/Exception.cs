@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace OpenHome.Git
 {
-    public class GitException : Exception
+    [Serializable]
+    public class GitException : Exception, ISerializable
     {
         internal GitException(string aMessage)
             : base(aMessage)
@@ -15,6 +17,7 @@ namespace OpenHome.Git
         }
     }
 
+    [Serializable]
     public class GitHeadCorruptException : GitException
     {
         public GitHeadCorruptException()
@@ -23,6 +26,7 @@ namespace OpenHome.Git
         }
     }
 
+    [Serializable]
     public class GitOriginNotFoundException : GitException
     {
         public GitOriginNotFoundException()
@@ -31,6 +35,7 @@ namespace OpenHome.Git
         }
     }
 
+    [Serializable]
     public class GitCorruptCommitException : GitException
     {
         public GitCorruptCommitException(string aId)

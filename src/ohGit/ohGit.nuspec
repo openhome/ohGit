@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>ohGit</id>
+    <version>$version$</version>
+    <title>ohGit</title>
+    <authors>OpenHome</authors>
+    <owners>OpenHome</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Library for reading and downloading git repositories</description>
+    <copyright>Copyright OpenHome 2015</copyright>
+  </metadata>
+  <files>
+    <file src="ohGit.dll" target="lib" />
+  </files>
+</package>

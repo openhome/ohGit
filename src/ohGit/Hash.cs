@@ -5,8 +5,10 @@ using System.Text;
 
 namespace OpenHome.Git
 {
-    internal class Hash
+    internal class Hash : IDisposable
     {
+        private System.Security.Cryptography.SHA1Managed iAlgorithm;
+
         internal Hash()
         {
             iAlgorithm = new System.Security.Cryptography.SHA1Managed();
@@ -46,6 +48,11 @@ namespace OpenHome.Git
             return (bytes);
         }
 
-        private System.Security.Cryptography.SHA1Managed iAlgorithm;
+        // IDisposable
+
+        public void Dispose()
+        {
+            iAlgorithm.Dispose();
+        }
     }
 }

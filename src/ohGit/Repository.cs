@@ -61,52 +61,48 @@ namespace OpenHome.Git
 
             var info = iFolderGit.CreateSubdirectory("info");
 
-            using (var exclude = new FileStream(Path.Combine(info.FullName, "exclude"), FileMode.CreateNew, FileAccess.Write))
+            var exclude = new FileStream(Path.Combine(info.FullName, "exclude"), FileMode.CreateNew, FileAccess.Write);
+
+            using (var writer = new StreamWriter(exclude))
             {
-                using (var writer = new StreamWriter(exclude))
-                {
-                    writer.Write("# git-ls-files --others --exclude-from=.git/info/exclude\n");
-                    writer.Write("# Lines that start with '#' are comments.\n");
-                    writer.Write("# For a project mostly in C, the following would be a good set of\n");
-                    writer.Write("# exclude patterns (uncomment them if you want to use them):\n");
-                    writer.Write("# *.[oa]\n");
-                    writer.Write("# *~\n");
-                }
+                writer.Write("# git-ls-files --others --exclude-from=.git/info/exclude\n");
+                writer.Write("# Lines that start with '#' are comments.\n");
+                writer.Write("# For a project mostly in C, the following would be a good set of\n");
+                writer.Write("# exclude patterns (uncomment them if you want to use them):\n");
+                writer.Write("# *.[oa]\n");
+                writer.Write("# *~\n");
             }
 
-            using (var head = new FileStream(Path.Combine(iFolderGit.FullName, "HEAD"), FileMode.CreateNew, FileAccess.Write))
+            var head = new FileStream(Path.Combine(iFolderGit.FullName, "HEAD"), FileMode.CreateNew, FileAccess.Write);
+
+            using (var writer = new StreamWriter(head))
             {
-                using (var writer = new StreamWriter(head))
-                {
-                    writer.Write("ref: refs/heads/" + aMaster + "\n");
-                }
+                writer.Write("ref: refs/heads/" + aMaster + "\n");
             }
 
-            using (var description = new FileStream(Path.Combine(iFolderGit.FullName, "description"), FileMode.CreateNew, FileAccess.Write))
+            var description = new FileStream(Path.Combine(iFolderGit.FullName, "description"), FileMode.CreateNew, FileAccess.Write);
+
+            using (var writer = new StreamWriter(description))
             {
-                using (var writer = new StreamWriter(description))
-                {
-                    writer.Write("Unnamed repository; edit this file 'description' to name the repository.\n");
-                }
+                writer.Write("Unnamed repository; edit this file 'description' to name the repository.\n");
             }
 
-            using (var config = new FileStream(Path.Combine(iFolderGit.FullName, "config"), FileMode.CreateNew, FileAccess.Write))
+            var config = new FileStream(Path.Combine(iFolderGit.FullName, "config"), FileMode.CreateNew, FileAccess.Write);
+
+            using (var writer = new StreamWriter(config))
             {
-                using (var writer = new StreamWriter(config))
-                {
-                    writer.Write("[core]\n");
-                    writer.Write("\trepositoryformatversion = 0\n");
-                    writer.Write("\tfilemode = false\n");
-                    writer.Write("\tbare = false\n");
-                    writer.Write("\tlogallrefupdates = true\n");
-                    writer.Write("\tsymlinks = false\n");
-                    writer.Write("\tignorecase = true\n");
-                    writer.Write("\thideDotFiles = dotGitOnly\n");
-                    writer.Write("[remote \"origin\"]\n");
-                    writer.Write("\turl = {0}\n", iOrigin);
-                    writer.Write("[branch \"master\"]\n");
-                    writer.Write("\tremote = origin\n");
-                }
+                writer.Write("[core]\n");
+                writer.Write("\trepositoryformatversion = 0\n");
+                writer.Write("\tfilemode = false\n");
+                writer.Write("\tbare = false\n");
+                writer.Write("\tlogallrefupdates = true\n");
+                writer.Write("\tsymlinks = false\n");
+                writer.Write("\tignorecase = true\n");
+                writer.Write("\thideDotFiles = dotGitOnly\n");
+                writer.Write("[remote \"origin\"]\n");
+                writer.Write("\turl = {0}\n", iOrigin);
+                writer.Write("[branch \"master\"]\n");
+                writer.Write("\tremote = origin\n");
             }
 
             iBranches = FindBranches();
@@ -182,67 +178,66 @@ namespace OpenHome.Git
 
         private string FindOrigin()
         {
-            using (var config = new FileStream(Path.Combine(iFolderGit.FullName, "config"), FileMode.Open, FileAccess.Read))
+            var config = new FileStream(Path.Combine(iFolderGit.FullName, "config"), FileMode.Open, FileAccess.Read);
+
+            using (var reader = new StreamReader(config))
             {
-                using (var reader = new StreamReader(config))
+                while (true)
                 {
-                    while (true)
+                    var line = reader.ReadLine();
+
+                    if (line == null)
                     {
-                        var line = reader.ReadLine();
+                        throw (new GitOriginNotFoundException());
+                    }
+
+                    if (line == "[remote \"origin\"]")
+                    {
+                        line = reader.ReadLine();
 
                         if (line == null)
                         {
                             throw (new GitOriginNotFoundException());
                         }
 
-                        if (line == "[remote \"origin\"]")
+                        if (!line.StartsWith("\turl = "))
                         {
-                            line = reader.ReadLine();
-
-                            if (line == null)
-                            {
-                                throw (new GitOriginNotFoundException());
-                            }
-
-                            if (!line.StartsWith("\turl = "))
-                            {
-                                throw (new GitOriginNotFoundException());
-                            }
-
-                            return (line.Substring(7));
+                            throw (new GitOriginNotFoundException());
                         }
+
+                        return (line.Substring(7));
                     }
                 }
             }
+
         }
 
         private string FindMaster()
         {
-            using (var head = new FileStream(Path.Combine(iFolderGit.FullName, "HEAD"), FileMode.Open, FileAccess.Read))
+            var head = new FileStream(Path.Combine(iFolderGit.FullName, "HEAD"), FileMode.Open, FileAccess.Read);
+
+            using (var reader = new StreamReader(head))
             {
-                using (var reader = new StreamReader(head))
+                var contents = reader.ReadLine();
+
+                string[] parts = contents.Split(new char[] { ' ' });
+
+                if (parts.Length != 2)
                 {
-                    var contents = reader.ReadLine();
-
-                    string[] parts = contents.Split(new char[] { ' ' });
-
-                    if (parts.Length != 2)
-                    {
-                        throw (new GitHeadCorruptException());
-                    }
-
-                    if (parts[0] != "ref:")
-                    {
-                        throw (new GitHeadCorruptException());
-                    }
-
-                    if (!parts[1].StartsWith("refs/heads/"))
-                    {
-                        throw (new GitHeadCorruptException());
-                    }
-
-                    return (parts[1].Substring(11));
+                    throw (new GitHeadCorruptException());
                 }
+
+                if (parts[0] != "ref:")
+                {
+                    throw (new GitHeadCorruptException());
+                }
+
+                if (!parts[1].StartsWith("refs/heads/"))
+                {
+                    throw (new GitHeadCorruptException());
+                }
+
+                return (parts[1].Substring(11));
             }
         }
 
@@ -280,41 +275,40 @@ namespace OpenHome.Git
 
             try
             {
-                using (var file = File.OpenRead(Path.Combine(iFolderGit.FullName, "packed-refs")))
+                var file = File.OpenRead(Path.Combine(iFolderGit.FullName, "packed-refs"));
+
+                using (var reader = new StreamReader(file))
                 {
-                    using (var reader = new StreamReader(file))
+                    while (true)
                     {
-                        while (true)
+                        string line = reader.ReadLine();
+
+                        if (line == null)
                         {
-                            string line = reader.ReadLine();
+                            return (refs);
+                        }
 
-                            if (line == null)
+                        if (line.Length > 0)
+                        {
+                            if (Char.IsLetterOrDigit(line, 0))
                             {
-                                return (refs);
-                            }
+                                string[] parts = line.Split(new char[] { ' ' });
 
-                            if (line.Length > 0)
-                            {
-                                if (Char.IsLetterOrDigit(line, 0))
+                                if (parts.Length == 2)
                                 {
-                                    string[] parts = line.Split(new char[] { ' ' });
-
-                                    if (parts.Length == 2)
+                                    if (parts[0].Length == 40)
                                     {
-                                        if (parts[0].Length == 40)
+                                        if (parts[1].StartsWith("refs/tags/"))
                                         {
-                                            if (parts[1].StartsWith("refs/tags/"))
-                                            {
-                                                string name = parts[1].Substring(10);
-                                                refs.Add(name, new RefPacked(this, name, parts[0]));
-                                            }
-                                            /*
-                                            else if (parts[1].StartsWith("refs/remotes/"))
-                                            {
-                                                iBranches.Add(new BranchRefPacked(this, parts[1].Substring(13), parts[0]));
-                                            }
-                                            */
+                                            string name = parts[1].Substring(10);
+                                            refs.Add(name, new RefPacked(this, name, parts[0]));
                                         }
+                                        /*
+                                        else if (parts[1].StartsWith("refs/remotes/"))
+                                        {
+                                            iBranches.Add(new BranchRefPacked(this, parts[1].Substring(13), parts[0]));
+                                        }
+                                        */
                                     }
                                 }
                             }
@@ -371,15 +365,14 @@ namespace OpenHome.Git
                 return (id);
             }
 
-            using (var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
-            {
-                DeflaterOutputStream deflater = new DeflaterOutputStream(file);
+            var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write);
 
-                using (var writer = new BinaryWriter(deflater))
-                {
-                    writer.Write(obj);
-                    deflater.Finish();
-                }
+            DeflaterOutputStream deflater = new DeflaterOutputStream(file);
+
+            using (var writer = new BinaryWriter(deflater))
+            {
+                writer.Write(obj);
+                deflater.Finish();
             }
 
             return (id);
@@ -394,12 +387,11 @@ namespace OpenHome.Git
                 throw (new GitException("Branch already exists"));
             }
 
-            using (var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
+            var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write);
+
+            using (var writer = new StreamWriter(file))
             {
-                using (var writer = new StreamWriter(file))
-                {
-                    writer.Write(aId + "\n");
-                }
+                writer.Write(aId + "\n");
             }
 
             FileInfo info = new FileInfo(path);
@@ -429,13 +421,13 @@ namespace OpenHome.Git
 
             FileInfo info = new FileInfo(path);
 
-            using (var file = info.Create())
+            var file = info.Create();
+
+            using (var writer = new StreamWriter(file))
             {
-                using (var writer = new StreamWriter(file))
-                {
-                    writer.Write(aId + "\n");
-                }
+                writer.Write(aId + "\n");
             }
+            
 
             aBranch.Update(new BranchFile(this, info));
         }
@@ -463,62 +455,61 @@ namespace OpenHome.Git
 
             try
             {
-                using (var file = File.OpenRead(path))
+                var file = File.OpenRead(path);
+
+                using (var inflater = new InflaterInputStream(file))
                 {
-                    using (var inflater = new InflaterInputStream(file))
+                    int offset = 0;
+
+                    byte[] header = new byte[100];
+
+                    while (true)
                     {
-                        int offset = 0;
+                        int b = inflater.ReadByte();
 
-                        byte[] header = new byte[100];
-
-                        while (true)
+                        if (b == 0)
                         {
-                            int b = inflater.ReadByte();
-
-                            if (b == 0)
-                            {
-                                break;
-                            }
-
-                            if (offset >= 100)
-                            {
-                                throw (new GitException("Illegal object header " + aId));
-                            }
-
-                            header[offset++] = (byte)b;
+                            break;
                         }
 
-                        string[] parts = ASCIIEncoding.ASCII.GetString(header, 0, offset).Split(new char[] { ' ' });
-
-                        if (parts.Length != 2)
+                        if (offset >= 100)
                         {
                             throw (new GitException("Illegal object header " + aId));
                         }
 
-                        int length;
+                        header[offset++] = (byte)b;
+                    }
 
-                        if (!int.TryParse(parts[1], out length))
-                        {
-                            throw (new GitException("Illegal object length " + aId));
-                        }
+                    string[] parts = ASCIIEncoding.ASCII.GetString(header, 0, offset).Split(new char[] { ' ' });
 
-                        byte[] bytes = new byte[length];
+                    if (parts.Length != 2)
+                    {
+                        throw (new GitException("Illegal object header " + aId));
+                    }
 
-                        inflater.Read(bytes, 0, length);
+                    int length;
 
-                        switch (parts[0])
-                        {
-                            case "commit":
-                                return (new Object(EObjectType.Commit, bytes));
-                            case "tag":
-                                return (new Object(EObjectType.Tag, bytes));
-                            case "tree":
-                                return (new Object(EObjectType.Tree, bytes));
-                            case "blob":
-                                return (new Object(EObjectType.Blob, bytes));
-                            default:
-                                throw (new GitException("Unrecognised object type " + aId));
-                        }
+                    if (!int.TryParse(parts[1], out length))
+                    {
+                        throw (new GitException("Illegal object length " + aId));
+                    }
+
+                    byte[] bytes = new byte[length];
+
+                    inflater.Read(bytes, 0, length);
+
+                    switch (parts[0])
+                    {
+                        case "commit":
+                            return (new Object(EObjectType.Commit, bytes));
+                        case "tag":
+                            return (new Object(EObjectType.Tag, bytes));
+                        case "tree":
+                            return (new Object(EObjectType.Tree, bytes));
+                        case "blob":
+                            return (new Object(EObjectType.Blob, bytes));
+                        default:
+                            throw (new GitException("Unrecognised object type " + aId));
                     }
                 }
             }
@@ -582,6 +573,13 @@ namespace OpenHome.Git
         public bool Fetch()
         {
             return (Fetcher.Fetch(this, iOrigin));
+        }
+
+        // IDisposable
+
+        public void Dispose()
+        {
+            iHash.Dispose();
         }
     }
 }

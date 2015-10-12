@@ -158,13 +158,12 @@ namespace OpenHome.Git
         {
             iId = aId;
 
-            using (var file = iFileInfo.Create())
+            var file = iFileInfo.Create();
+
+            using (var writer = new StreamWriter(file))
             {
-                using (var writer = new StreamWriter(file))
-                {
-                    writer.Write(iId + "\n");
-                    writer.Flush();
-                }
+                writer.Write(iId + "\n");
+                writer.Flush();
             }
         }
 
