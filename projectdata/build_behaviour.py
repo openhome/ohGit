@@ -1,6 +1,9 @@
 # Defines the build behaviour for continuous integration builds.
 
 import sys
+import os
+import shutil
+import glob
 
 try:
     from ci import (OpenHomeBuilder, require_version)
@@ -8,10 +11,13 @@ except ImportError:
     print "You need to update ohDevTools."
     sys.exit(1)
 
-require_version(22)
-
+require_version(46)
 
 class Builder(OpenHomeBuilder):
+    # Standard rules enforce warnings-as-errors and importing SharedSettings.targets,
+    # disallow tabs in C# files and disallow .orig files in the source tree.
+    source_check_rules = OpenHomeBuilder.standard_source_check_rules
+
     def setup(self):
         self.nuget_server = self.env.get('NUGET_SERVER', None)
         self.nuget_api_key = self.env.get('NUGET_API_KEY', None)
@@ -20,10 +26,6 @@ class Builder(OpenHomeBuilder):
 
         if not os.path.exists(self.packagepath):
             os.makedirs(self.packagepath)
-
-    def configure(self):
-        self.set_nunit_location(glob.glob('dependencies/nuget/NUnit.Runners*/tools/nunit-console-x86.exe')[0])
-        self.set_cover_location(glob.glob('dependencies/nuget/OpenCover*/OpenCover.Console.exe')[0])
 
     def clean(self):
         self.msbuild('src/ohGit.sln', target='Clean', configuration=self.configuration)
