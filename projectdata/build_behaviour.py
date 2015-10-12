@@ -46,6 +46,6 @@ class Builder(OpenHomeBuilder):
             self.publish_nuget(os.path.join('build', 'packages', '*.nupkg'), self.nuget_api_key, self.nuget_server)
         else:
             print(self.nuget_server)
-            pribt(self.nuget_api_key)
+            print(self.nuget_api_key)
             print("Not publishing nuget dependency, nuget server and API key not specified")
         
