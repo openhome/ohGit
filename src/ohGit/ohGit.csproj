@@ -67,7 +67,6 @@
   <ItemGroup>
     <None Include="ohGit.nuspec">
       <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config">
       <SubType>Designer</SubType>

@@ -32,7 +32,7 @@ class Builder(OpenHomeBuilder):
 
     def build(self):
         self.msbuild('src/ohGit.sln', target='Build', configuration=self.configuration)
-        self.pack_nuget('src/ohGit/ohGit.nuspec', 'build/ohGit/bin/{0}'.format(self.configuration))
+        self.pack_nuget('src/ohGit/ohGit.nuspec', 'src/ohGit/bin/{0}'.format(self.configuration))
 
     def publish(self):
         if self.options.auto and not self.platform == 'Windows-x86':
