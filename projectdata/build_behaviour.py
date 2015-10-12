@@ -22,6 +22,7 @@ class Builder(OpenHomeBuilder):
         self.nuget_server = self.env.get('NUGET_SERVER', None)
         self.nuget_api_key = self.env.get('NUGET_API_KEY', None)
         self.set_nuget_sln('src/ohGit.sln')
+
         self.packagepath = os.path.join(os.getcwd(),'build', 'packages');
 
         if not os.path.exists(self.packagepath):
@@ -44,5 +45,7 @@ class Builder(OpenHomeBuilder):
             print "Publishing nuget on %s platform is enabled" % (self.platform)
             self.publish_nuget(os.path.join('build', 'packages', '*.nupkg'), self.nuget_api_key, self.nuget_server)
         else:
+			print(self.nuget_server);
+			pribt(self.nuget_api_key);
             print("Not publishing nuget dependency, nuget server and API key not specified")
         
