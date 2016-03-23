@@ -43,7 +43,7 @@ class Builder(OpenHomeBuilder):
         # build the nuget package
         if self.configuration == 'Release' and self.nuget_server is not None and self.nuget_api_key is not None:
             print "Publishing nuget on %s platform is enabled" % (self.platform)
-            self.publish_nuget(os.path.join('build', 'packages', '*.nupkg'), self.nuget_api_key, self.nuget_server)
+            self.publish_package_curl(os.path.join('build', 'packages', '*.nupkg'), self.nuget_server)
         else:
             print(self.nuget_server)
             print(self.nuget_api_key)
